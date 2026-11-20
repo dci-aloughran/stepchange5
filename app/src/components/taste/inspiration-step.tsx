@@ -559,7 +559,15 @@ function SignedInInspiration() {
                 <InspirationCard
                   key={item.id}
                   item={item}
-                  index={idx}
+                  // Numbered oldest-first within photos or links (the list
+                  // is newest-first), so names stay stable as items are added.
+                  index={
+                    items
+                      .slice(idx + 1)
+                      .filter(
+                        (i) => Boolean(i.uploadId) === Boolean(item.uploadId),
+                      ).length
+                  }
                   thumb={item.uploadId ? thumbs[item.uploadId] : undefined}
                   onThumbError={() => {
                     if (!item.uploadId) return;
@@ -680,7 +688,7 @@ function InspirationCard({
 }) {
   const name = item.uploadId
     ? `Photo ${index + 1}`
-    : `${linkKindLabel(item.kind)} link`;
+    : `${item.kind === "link" ? "Link" : `${linkKindLabel(item.kind)} link`} ${index + 1}`;
   const noteId = `insp-note-${item.id}`;
   return (
     <li
@@ -696,7 +704,7 @@ function InspirationCard({
               alt={
                 item.note
                   ? `Inspiration: ${item.note}`
-                  : `Inspiration ${name.toLowerCase()}`
+                  : `Your inspiration, ${name}`
               }
               className="h-full w-full object-cover"
               onError={onThumbError}
@@ -760,7 +768,7 @@ function InspirationCard({
         disabled={busy}
         className="min-h-11 self-start rounded-xl px-2 text-sm text-muted underline focus-visible:outline-2 focus-visible:outline-cream"
       >
-        Remove {name.toLowerCase()}
+        Remove {name}
       </button>
     </li>
   );
