@@ -128,9 +128,11 @@ export const planRoutes = new Hono<AuthEnv>()
           {
             householdNeed: body.householdNeed ?? brief.householdNeed,
             recommendedUse: body.recommendedUse ?? brief.recommendedUse,
-            roomConstraints: [],
+            // Keep the drafted constraints and open questions; the checks
+            // re-derive and de-duplicate the deterministic ones.
+            roomConstraints: brief.roomConstraints,
             requirements: body.requirements,
-            uncertainties: [],
+            uncertainties: brief.uncertainties,
           },
           {
             room: { ...ctx.room, reviewed: ctx.room.reviewedAt != null },
