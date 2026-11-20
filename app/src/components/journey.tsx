@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -9,6 +10,20 @@ import { RoomsStep } from "./rooms-step";
 import { GROUPS, STEPS, type Step } from "./steps";
 
 const STORAGE_KEY = "deloitful.journey";
+
+const PROPERTY_TYPES = ["House", "Flat", "Bungalow", "Maisonette"];
+
+function analyseListing(url: string) {
+  let hash = 0;
+  for (const char of url) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  return {
+    propertyType: PROPERTY_TYPES[hash % PROPERTY_TYPES.length],
+    beds: String(2 + (hash % 4)),
+    baths: String(1 + (hash % 2)),
+    area: String(45 + (hash % 90)),
+    price: (120000 + (hash % 400000)).toLocaleString("en-GB"),
+  };
+}
 
 export type JourneyData = Record<string, string | string[]>;
 
@@ -66,7 +81,22 @@ export function Journey({ slug }: { slug: string }) {
     Array.isArray(data[k]) ? (data[k] as string[]) : [];
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 px-5 pt-8 pb-6">
+    <main
+      className={`relative isolate mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 overflow-hidden px-5 pt-8 pb-6 ${step.slug === "home" ? "text-foreground" : ""}`}
+    >
+      {step.slug === "home" && (
+        <>
+          <Image
+            src="/images/property-photograph.png"
+            alt=""
+            fill
+            priority
+            sizes="(min-width: 448px) 448px, 100vw"
+            className="-z-20 object-cover"
+          />
+          <div className="-z-10 absolute inset-0 bg-gradient-to-b from-background/80 via-background/40 to-background" />
+        </>
+      )}
       <Brand trailing="Preview" />
       <Stepper current={step.group} />
       <header className="flex flex-col gap-3">
@@ -138,6 +168,23 @@ export function Journey({ slug }: { slug: string }) {
                 </label>
               ))}
             </div>
+          )}
+          {step.slug === "home" && (
+            <button
+              type="button"
+              disabled={!value("listingUrl")}
+              onClick={() => {
+                const parsed = analyseListing(value("listingUrl"));
+                update("propertyType", parsed.propertyType);
+                update("beds", parsed.beds);
+                update("baths", parsed.baths);
+                update("area", parsed.area);
+                update("price", parsed.price);
+              }}
+              className="min-h-11 rounded-full border border-white/15 px-4 text-sm disabled:opacity-40"
+            >
+              Analyse listing ↗
+            </button>
           )}
         </section>
       )}
