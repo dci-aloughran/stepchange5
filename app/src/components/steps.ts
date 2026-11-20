@@ -3,6 +3,13 @@ export type Field = {
   label: string;
   placeholder?: string;
   wide?: boolean;
+  numeric?: boolean;
+};
+export type Choice = {
+  key: string;
+  label: string;
+  options: string[];
+  single?: boolean;
 };
 export type Step = {
   slug: string;
@@ -11,7 +18,8 @@ export type Step = {
   title: string;
   intro: string;
   fields?: Field[];
-  choices?: { key: string; label: string; options: string[] };
+  choices?: Choice[];
+  custom?: "rooms";
   cta?: string;
 };
 
@@ -28,14 +36,23 @@ export const STEPS: Step[] = [
   {
     slug: "home",
     group: "Home",
-    eyebrow: "01 / Your home",
-    title: "Which home are we planning?",
-    intro: "A home you're thinking of buying, or the one you live in now.",
-    choices: {
-      key: "journey",
-      label: "I'm…",
-      options: ["Buying a home", "Already a homeowner"],
-    },
+    eyebrow: "01 / Home",
+    title: "Start with the real place.",
+    intro: "A few details now, fewer expensive mistakes later.",
+    choices: [
+      {
+        key: "journey",
+        label: "I'm…",
+        options: ["Buying a home", "Already a homeowner"],
+        single: true,
+      },
+      {
+        key: "propertyType",
+        label: "Property type",
+        options: ["House", "Flat", "Bungalow", "Maisonette"],
+        single: true,
+      },
+    ],
     fields: [
       {
         key: "address",
@@ -43,37 +60,26 @@ export const STEPS: Step[] = [
         placeholder: "Flat 2, 18 Rowan Court",
         wide: true,
       },
-      { key: "beds", label: "Bedrooms", placeholder: "2" },
-      { key: "baths", label: "Bathrooms", placeholder: "1" },
-      { key: "area", label: "Floor area (m²)", placeholder: "58" },
+      { key: "beds", label: "Bedrooms", placeholder: "3", numeric: true },
+      { key: "baths", label: "Bathrooms", placeholder: "1", numeric: true },
+      {
+        key: "area",
+        label: "Floor area (m²)",
+        placeholder: "58",
+        numeric: true,
+      },
       { key: "price", label: "Price (£)", placeholder: "165,000" },
     ],
   },
   {
     slug: "rooms",
     group: "Home",
-    eyebrow: "01 / Review your rooms",
-    title: "Check the rooms we've found.",
+    eyebrow: "01 / Check your home",
+    title: "Review every room.",
     intro:
-      "Add or correct rooms. Measurements you confirm are used; estimates are flagged.",
-    fields: [
-      {
-        key: "room1",
-        label: "Living room (W × L cm)",
-        placeholder: "480 × 370",
-      },
-      { key: "room2", label: "Bedroom 1 (W × L cm)", placeholder: "360 × 320" },
-      {
-        key: "room3",
-        label: "Bedroom 2 (W × L cm)",
-        placeholder: "Unknown — measure",
-      },
-      {
-        key: "room4",
-        label: "Kitchen / diner (W × L cm)",
-        placeholder: "410 × 300",
-      },
-    ],
+      "Upload a floor plan or edit the rooms yourself. Measurements you confirm are used; estimates are flagged.",
+    custom: "rooms",
+    cta: "Use these rooms",
   },
   {
     slug: "needs",
@@ -112,17 +118,19 @@ export const STEPS: Step[] = [
     eyebrow: "02 / Accessibility needs",
     title: "Space that works for everyone.",
     intro: "Confirmed needs become hard layout rules. No diagnosis needed.",
-    choices: {
-      key: "accessNeeds",
-      label: "Needs to plan for",
-      options: [
-        "Wheelchair turning space",
-        "Step-free routes",
-        "Clear transfer space",
-        "Reach range",
-        "Trip-hazard free",
-      ],
-    },
+    choices: [
+      {
+        key: "accessNeeds",
+        label: "Needs to plan for",
+        options: [
+          "Wheelchair turning space",
+          "Step-free routes",
+          "Clear transfer space",
+          "Reach range",
+          "Trip-hazard free",
+        ],
+      },
+    ],
     fields: [
       {
         key: "accessNotes",
@@ -167,19 +175,21 @@ export const STEPS: Step[] = [
     title: "Warm contemporary, mostly.",
     intro:
       "Here's what we took from your inspiration. Adjust anything that's off.",
-    choices: {
-      key: "taste",
-      label: "Keep what sounds like you",
-      options: [
-        "Natural oak",
-        "Warm neutrals",
-        "Muted greens",
-        "Textured fabrics",
-        "Rounded forms",
-        "Minimal clutter",
-        "Black accents, sparingly",
-      ],
-    },
+    choices: [
+      {
+        key: "taste",
+        label: "Keep what sounds like you",
+        options: [
+          "Natural oak",
+          "Warm neutrals",
+          "Muted greens",
+          "Textured fabrics",
+          "Rounded forms",
+          "Minimal clutter",
+          "Black accents, sparingly",
+        ],
+      },
+    ],
   },
   {
     slug: "keep",
@@ -229,16 +239,18 @@ export const STEPS: Step[] = [
         wide: true,
       },
     ],
-    choices: {
-      key: "priorities",
-      label: "Priorities",
-      options: [
-        "Child-friendly",
-        "Durable",
-        "Second-hand welcome",
-        "Delivered quickly",
-      ],
-    },
+    choices: [
+      {
+        key: "priorities",
+        label: "Priorities",
+        options: [
+          "Child-friendly",
+          "Durable",
+          "Second-hand welcome",
+          "Delivered quickly",
+        ],
+      },
+    ],
   },
   {
     slug: "review",
