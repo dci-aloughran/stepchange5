@@ -1,10 +1,9 @@
-// The whole buyer journey as a user would do it: listing screenshot → home →
+// The whole buyer journey as a user would do it: home →
 // rooms → needs → accessibility → keep → budget → review → plan → brief →
 // layout → products → whole-home budget. (Concept images are covered by
 // plan.e2e.mjs and skipped here to keep AI cost down.)
 import { mkdirSync } from "node:fs";
 import { serverSnapshot } from "./lib/journey.mjs";
-import { listingScreenshot } from "./lib/listing.mjs";
 import { APP, reporter, startSession } from "./lib/session.mjs";
 
 const OUT = new URL("./output/", import.meta.url).pathname;
@@ -27,31 +26,29 @@ try {
   await session.signIn();
   await page.goto(`${APP}/journey/home`);
 
-  // 1. Home: bring in the listing from a screenshot.
+  // 1. Home: details entered by hand.
   await page.getByRole("button", { name: "Buying a home" }).click();
-  await page.locator('section[aria-labelledby="listing-preview-heading"] input[type=file]').setInputFiles({
-    name: "listing.png", mimeType: "image/png", buffer: await listingScreenshot(),
-  });
-  await page.getByRole("button", { name: "Read listing" }).click();
-  log("reading listing…");
-  check(await visible(page.getByTestId("listing-preview-card"), 150000), "listing preview shown");
-  await page.getByRole("button", { name: "Use these details" }).click();
-  const beds = await page.getByLabel("Bedrooms").inputValue();
-  const baths = await page.getByLabel("Bathrooms").inputValue();
-  const price = await page.getByLabel("Price (£)").inputValue();
-  const houseSelected = await page.getByRole("button", { name: "House", exact: true }).getAttribute("aria-pressed");
-  check(beds === "3" && baths === "2" && /325,?000/.test(price) && houseSelected === "true",
-    `listing filled the home step (beds ${beds}, baths ${baths}, price ${price}, house ${houseSelected})`);
+  await page.getByRole("button", { name: "House", exact: true }).click();
+  check((await page.getByLabel(/Listing URL/).count()) === 0 && (await page.getByText("Bring in the listing").count()) === 0, "no listing link or listing preview on the home step");
+  await page.getByLabel("Bedrooms").fill("3");
+  await page.getByLabel("Bathrooms").fill("2");
+  await page.getByLabel("Floor area (m²)").fill("93");
+  await page.getByLabel("Price (£)").fill("325,000");
   await page.getByLabel("Address or name").fill("E2E Full Journey House");
   await shot("01-home");
   await cont("rooms");
 
-  // 2. Rooms: seeded from the listing's room sizes, count matches.
+  // 2. Rooms: one per declared bedroom/bathroom; measure the living room.
   await page.locator("[role=status]").first().waitFor();
   const status = await page.locator("[role=status]").first().textContent();
   check(/^3 bedrooms · 2 bathrooms/.test(status ?? ""), `rooms status: "${status}"`);
-  const roomsText = await page.locator("main").innerText();
-  check(/4\.6 × 3\.8 m/.test(roomsText), "living room size came from the listing");
+  // Measure the living room in the room editor.
+  const livingCard = page.locator("article", { has: page.getByRole("heading", { name: "Living room" }) });
+  await livingCard.getByRole("button", { name: "Edit" }).click();
+  await livingCard.getByLabel("Width (m)").fill("4.6");
+  await livingCard.getByLabel("Length (m)").fill("3.8");
+  await livingCard.getByRole("button", { name: "Save room" }).click();
+  check((await livingCard.textContent()).includes("4.6 × 3.8 m"), "living room measured 4.6 × 3.8 m");
   await shot("02-rooms");
   await page.getByRole("button", { name: "Use these rooms" }).click();
   await page.waitForURL("**/journey/needs");
@@ -105,10 +102,10 @@ try {
   // Server state is exactly what the user entered.
   const s = await serverSnapshot(page);
   check(s.homes.length === 1, `one home on the server (${s.homes.length})`);
-  check(s.home?.listing?.pricePence === 32_500_000 && s.home?.listing?.bedrooms === 3, `listing saved to the home ${JSON.stringify(s.home?.listing)}`);
+  check(s.home?.listing?.pricePence === 32_500_000 && s.home?.listing?.bedrooms === 3, `home details saved ${JSON.stringify(s.home?.listing)}`);
   check(s.rooms.filter((x) => x.roomType === "bedroom").length === 3 && s.rooms.every((x) => x.reviewedAt), `3 bedrooms, all ${s.rooms.length} rooms reviewed`);
   const living = s.rooms.find((x) => /living/i.test(x.name));
-  check(living?.roomType === "living_room", `listing's living room typed as living_room (${living?.roomType})`);
+  check(living?.roomType === "living_room" && living?.widthCm === 460 && living?.lengthCm === 380, `living room stored with its size (${living?.widthCm}×${living?.lengthCm})`);
   check(s.needs.length === 1 && s.needs[0].confirmed && s.household.budgetTotalPence === 600_000, "confirmed need + £6,000 budget saved");
 
   // 7. Plan the living room: brief → layout → products.

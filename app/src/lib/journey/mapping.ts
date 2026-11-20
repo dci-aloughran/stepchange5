@@ -7,7 +7,6 @@ import {
   type CreateRoom,
   type JourneyType,
   type Listing,
-  type ListingExtractResponse,
   type UpdateHousehold,
 } from "@stepchange/shared";
 import {
@@ -96,8 +95,6 @@ export function homePayload(data: JourneyData): HomePayload {
   if (beds !== undefined) listing.bedrooms = beds;
   const baths = parseCount(data.baths);
   if (baths !== undefined) listing.bathrooms = baths;
-  const description = data.listingDescription?.trim();
-  if (description) listing.description = description.slice(0, 5000);
   return {
     name: (address || "My home").slice(0, 120),
     address: address ? address.slice(0, 300) : null,
@@ -765,43 +762,6 @@ export function isRoomConfirmed(
 // ---------------------------------------------------------------------------
 // Listing preview → journey answers
 // ---------------------------------------------------------------------------
-
-const PROPERTY_LABELS: Record<PropertyType, string> = {
-  house: "House",
-  flat: "Flat",
-  bungalow: "Bungalow",
-  maisonette: "Maisonette",
-};
-
-export function listingAnswers(
-  result: ListingExtractResponse,
-): Partial<JourneyData> {
-  const d = result.details;
-  const out: Partial<JourneyData> = {};
-  if (d.propertyType) out.propertyType = PROPERTY_LABELS[d.propertyType];
-  if (d.bedrooms != null) out.beds = String(d.bedrooms);
-  if (d.bathrooms != null) out.baths = String(d.bathrooms);
-  if (d.floorAreaSqm != null) out.area = String(d.floorAreaSqm);
-  if (d.pricePence != null) out.price = formatPounds(d.pricePence).slice(1);
-  if (d.address) out.address = d.address;
-  if (d.summary) out.listingDescription = d.summary;
-  out.listingPhotoUploadIds = result.photoUploadIds;
-  out.listingFloorPlanUploadId = result.floorPlanUploadId;
-  return out;
-}
-
-// Seed rooms from a listing unless the user already shaped their room list.
-export function listingRooms(
-  result: ListingExtractResponse,
-  current: PlanRoom[] | null,
-  basics: HomeBasics,
-): PlanRoom[] | null {
-  if (!result.rooms.length) return null;
-  if (current?.some((r) => r.edited || r.source !== "template")) return null;
-  return roomsFromFloorPlan(result.rooms, basics).rooms.map((r) =>
-    r.note ? { ...r, note: "Not shown in the listing · add its size" } : r,
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Resume (MB-005)

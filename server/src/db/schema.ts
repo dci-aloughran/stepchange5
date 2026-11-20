@@ -73,6 +73,8 @@ export const uploadPurpose = pgEnum("upload_purpose", [
   "floor_plan",
   "room_photo",
   "inspiration",
+  // Retired listing-preview uploads; kept because Postgres can't drop enum
+  // values. No longer accepted by the API.
   "listing",
 ]);
 export const uploadStatus = pgEnum("upload_status", [

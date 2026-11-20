@@ -38,8 +38,8 @@ export const UPLOAD_ALLOWED_MIME: Record<
   floor_plan: ["application/pdf", "image/png", "image/jpeg"],
   room_photo: ["image/png", "image/jpeg", "image/webp"],
   inspiration: ["image/png", "image/jpeg", "image/webp"],
-  // Screenshots or a saved PDF of a property listing the user shares.
-  listing: ["application/pdf", "image/png", "image/jpeg", "image/webp"],
+  // Retired (listing preview removed): no file types are accepted.
+  listing: [],
 };
 
 /** Allowlisted file extensions per MIME type. */

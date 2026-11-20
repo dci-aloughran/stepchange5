@@ -1,4 +1,3 @@
-import type { ListingExtractResponse } from "@stepchange/shared";
 import { describe, expect, it } from "vitest";
 import type { PlanRoom } from "../rooms";
 import {
@@ -11,8 +10,6 @@ import {
   householdChanged,
   householdPayload,
   isRoomConfirmed,
-  listingAnswers,
-  listingRooms,
   needPayload,
   needProblem,
   personLabel,
@@ -65,7 +62,6 @@ describe("homePayload", () => {
         baths: "1",
         area: "58",
         price: "165,000",
-        listingUrl: "https://example.com/x",
       }),
     ).toEqual({
       name: "18 Rowan Court",
@@ -318,67 +314,6 @@ describe("rooms", () => {
     expect(isRoomConfirmed(rooms[0] as PlanRoom, reviewed)).toBe(true);
     expect(isRoomConfirmed(room({ widthCm: 300 }), reviewed)).toBe(false);
     expect(isRoomConfirmed(room({ id: "r3" }), reviewed)).toBe(false);
-  });
-});
-
-describe("listing preview", () => {
-  const result: ListingExtractResponse = {
-    details: {
-      address: "18 Rowan Court",
-      pricePence: 16_500_000,
-      priceQualifier: null,
-      tenure: null,
-      propertyType: "flat",
-      propertySubtype: null,
-      bedrooms: 2,
-      bathrooms: null,
-      receptions: null,
-      floorAreaSqm: 58,
-      keyFeatures: [],
-      summary: "Ground floor flat",
-      agent: null,
-      portal: null,
-    },
-    rooms: [
-      {
-        name: "Bedroom 1",
-        roomType: "bedroom",
-        widthCm: 360,
-        lengthCm: 320,
-        dimensionStatus: "source_printed",
-      },
-    ],
-    photoUploadIds: [],
-    floorPlanUploadId: null,
-    missing: [],
-    notes: [],
-    sourceUrl: null,
-    modelVersion: "m",
-    promptVersion: "p",
-  };
-  it("fills only known values", () => {
-    expect(listingAnswers(result)).toEqual({
-      propertyType: "Flat",
-      beds: "2",
-      area: "58",
-      price: "165,000",
-      address: "18 Rowan Court",
-      listingDescription: "Ground floor flat",
-      listingPhotoUploadIds: [],
-      listingFloorPlanUploadId: null,
-    });
-  });
-  it("seeds rooms unless the user already edited them", () => {
-    const basics = { propertyType: "flat" as const, bedrooms: 2, bathrooms: 1 };
-    const seeded = listingRooms(result, null, basics);
-    expect(seeded?.map((r) => r.name)).toEqual([
-      "Bedroom 1",
-      "Bedroom 2",
-      "Bathroom 1",
-    ]);
-    expect(seeded?.[1]?.note).toMatch(/listing/);
-    expect(listingRooms(result, [room()], basics)).toBeNull();
-    expect(listingRooms({ ...result, rooms: [] }, null, basics)).toBeNull();
   });
 });
 
