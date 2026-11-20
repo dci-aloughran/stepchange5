@@ -16,6 +16,7 @@ DEMO_MODE=manual pnpm demo        # presenter mode: press Enter to advance
 DEMO_PAUSE=8 pnpm demo            # longer pauses
 DEMO_SKIP_IMAGE=1 pnpm demo       # skip the AI room image (~1 min, costs credits)
 E2E_APP=http://localhost:3000 pnpm demo   # against a local app
+DEMO_HEADLESS=1 DEMO_SHOTS=1 DEMO_PAUSE=0.5 pnpm demo   # unattended rehearsal; saves what the audience sees at each pause to output/
 ```
 
 The demo runs against https://stepchange5.vercel.app by default and walks the
@@ -23,6 +24,12 @@ whole journey with a caption bar: home → rooms + floor-plan upload →
 household → accessibility → style + taste → keep → budget → review → plan →
 brief → layout → room image → products → budget → privacy. It makes real AI
 calls (floor plan, taste, brief, layout, image), so allow 4–6 minutes.
+
+The view follows the action: each element is smoothly centred above the
+caption bar before it's used, results scroll into view when AI steps finish,
+and long sections (rooms, taste, review, brief, products, budget) are panned
+through slowly during the pause. The run warns in the terminal if anything it
+acted on wasn't fully on screen.
 
 ## Tests
 
