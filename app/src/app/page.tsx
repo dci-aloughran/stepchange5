@@ -1,4 +1,5 @@
 import { HealthResponseSchema } from "@stepchange/shared";
+import Image from "next/image";
 import Link from "next/link";
 import { Brand } from "@/components/journey";
 import { api } from "@/lib/api";
@@ -18,7 +19,16 @@ export default async function Start() {
   const ok = await serverOk();
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 px-5 pt-8 pb-6">
+    <main className="relative isolate mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 overflow-hidden px-5 pt-8 pb-6 text-foreground">
+      <Image
+        src="/images/start-background.png"
+        alt=""
+        fill
+        priority
+        sizes="(min-width: 448px) 448px, 100vw"
+        className="-z-20 object-cover"
+      />
+      <div className="-z-10 absolute inset-0 bg-gradient-to-b from-background/70 via-background/10 to-background" />
       <Brand />
       <p className="text-xs tracking-[0.2em] text-muted uppercase">
         Development preview
