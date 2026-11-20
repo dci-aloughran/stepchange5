@@ -1,36 +1,33 @@
 "use client";
 
+import type { ListingExtractResponse } from "@stepchange/shared";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
+import { InspirationStep } from "@/components/taste/inspiration-step";
+import { TasteStep } from "@/components/taste/taste-step";
+import {
+  listingAnswers,
+  listingRooms,
+  reviewedRoomMap,
+} from "@/lib/journey/mapping";
+import { patchJourney, readRooms, writeRooms } from "@/lib/journey/store";
+import type { JourneyData } from "@/lib/journey/types";
+import { useJourneyData, useJourneySync } from "@/lib/journey/use-journey";
 import { Brand } from "./brand";
-import { RoomsStep } from "./rooms-step";
+import { AccessStep } from "./journey/access-step";
+import { BudgetStep } from "./journey/budget-step";
+import { CreatePlan } from "./journey/create-plan";
+import { KeepStep } from "./journey/keep-step";
+import { NeedsStep } from "./journey/needs-step";
+import { ReviewStep } from "./journey/review-step";
+import { SyncStatusLine } from "./journey/sync-status";
+import { ListingPreview } from "./listing/listing-preview";
+import { basicsFrom, RoomsStep } from "./rooms-step";
 import { GROUPS, STEPS, type Step } from "./steps";
 
-const STORAGE_KEY = "deloitful.journey";
-
-export type JourneyData = Record<string, string | string[]>;
-
-export function useJourneyState() {
-  const [data, setData] = useState<JourneyData>({});
-  const [loaded, setLoaded] = useState(false);
-  useEffect(() => {
-    try {
-      setData(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}"));
-    } catch {}
-    setLoaded(true);
-  }, []);
-  const update = (key: string, value: string | string[]) => {
-    setData((prev) => {
-      const next = { ...prev, [key]: value };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      return next;
-    });
-  };
-  return { data, update, loaded };
-}
+export type { JourneyData } from "@/lib/journey/types";
 
 function Stepper({ current }: { current: Step["group"] }) {
   const idx = GROUPS.indexOf(current);
@@ -50,9 +47,13 @@ function Stepper({ current }: { current: Step["group"] }) {
   );
 }
 
+const primary =
+  "min-h-14 rounded-3xl bg-cream text-lg font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cream disabled:opacity-60";
+
 export function Journey({ slug }: { slug: string }) {
   const router = useRouter();
-  const { data, update, loaded } = useJourneyState();
+  const { data, rooms, update, loaded } = useJourneyData();
+  const sync = useJourneySync();
   const index = Math.max(
     0,
     STEPS.findIndex((s) => s.slug === slug),
@@ -60,11 +61,58 @@ export function Journey({ slug }: { slug: string }) {
   const step = STEPS[index] as Step;
   const next = STEPS[index + 1];
   const prev = STEPS[index - 1];
+  const [roomsSave, setRoomsSave] = useState<
+    { kind: "idle" } | { kind: "saving" } | { kind: "error"; message: string }
+  >({ kind: "idle" });
+  const [listingNote, setListingNote] = useState("");
 
-  const value = (k: string) =>
-    typeof data[k] === "string" ? (data[k] as string) : "";
-  const list = (k: string) =>
-    Array.isArray(data[k]) ? (data[k] as string[]) : [];
+  // MB-005: remember where the user is so another device can resume here.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: once per step
+  useEffect(() => {
+    if (loaded && data.lastStep !== slug) update("lastStep", slug);
+  }, [loaded, slug]);
+
+  const value = (k: string) => {
+    const v = data[k as keyof JourneyData];
+    return typeof v === "string" ? v : "";
+  };
+  const goNext = () => router.push(next ? `/journey/${next.slug}` : "/plan");
+
+  async function confirmRooms(skipSave = false) {
+    const current = readRooms() ?? rooms ?? [];
+    patchJourney({ reviewedRooms: reviewedRoomMap(current) });
+    if (sync.isSignedIn && sync.ready && !skipSave) {
+      setRoomsSave({ kind: "saving" });
+      try {
+        await sync.syncNow();
+      } catch (e) {
+        setRoomsSave({
+          kind: "error",
+          message: e instanceof Error ? e.message : "Saving failed.",
+        });
+        return;
+      }
+    }
+    setRoomsSave({ kind: "idle" });
+    goNext();
+  }
+
+  function applyListing(result: ListingExtractResponse) {
+    const nextData = patchJourney(listingAnswers(result));
+    const seeded = listingRooms(result, readRooms(), basicsFrom(nextData));
+    if (seeded) writeRooms(seeded);
+    setListingNote(
+      seeded
+        ? `Filled in from your listing, with ${seeded.length} rooms to review on the next step. Check every value.`
+        : "Filled in from your listing. Check every value before continuing.",
+    );
+  }
+
+  const restored = sync.restored;
+  const resumeStep =
+    restored?.restored && restored.lastStep && restored.lastStep !== slug
+      ? STEPS.find((s) => s.slug === restored.lastStep)
+      : undefined;
 
   return (
     <main
@@ -85,6 +133,24 @@ export function Journey({ slug }: { slug: string }) {
       )}
       <Brand trailing="Preview" />
       <Stepper current={step.group} />
+      <SyncStatusLine
+        isLoaded={sync.isLoaded}
+        isSignedIn={sync.isSignedIn}
+        onRetry={() => void sync.syncNow().catch(() => {})}
+      />
+      {restored?.restored && (
+        <section className="rounded-3xl border border-white/10 bg-card p-4 text-sm">
+          <p>Welcome back. We've restored your answers from your account.</p>
+          {resumeStep && (
+            <Link
+              href={`/journey/${resumeStep.slug}`}
+              className="mt-2 inline-flex min-h-11 items-center underline underline-offset-4"
+            >
+              Continue where you left off: {resumeStep.title}
+            </Link>
+          )}
+        </section>
+      )}
       <header className="flex flex-col gap-3">
         <p className="text-xs tracking-[0.2em] text-muted uppercase">
           {step.eyebrow}
@@ -102,23 +168,16 @@ export function Journey({ slug }: { slug: string }) {
               </legend>
               <div className="flex flex-wrap gap-2">
                 {choice.options.map((o) => {
-                  const selected = choice.single
-                    ? value(choice.key) === o
-                    : list(choice.key).includes(o);
+                  const selected = value(choice.key) === o;
                   return (
                     <button
                       type="button"
                       key={o}
                       aria-pressed={selected}
-                      onClick={() => {
-                        if (choice.single) return update(choice.key, o);
-                        const cur = list(choice.key);
-                        update(
-                          choice.key,
-                          selected ? cur.filter((x) => x !== o) : [...cur, o],
-                        );
-                      }}
-                      className={`min-h-11 rounded-full border px-4 text-sm ${selected ? "border-transparent bg-cream text-ink" : "border-white/15"}`}
+                      onClick={() =>
+                        update(choice.key as "journey" | "propertyType", o)
+                      }
+                      className={`min-h-11 rounded-full border px-4 text-sm focus-visible:outline-2 focus-visible:outline-cream ${selected ? "border-transparent bg-cream text-ink" : "border-white/15"}`}
                     >
                       {o}
                     </button>
@@ -130,57 +189,104 @@ export function Journey({ slug }: { slug: string }) {
           {step.fields && (
             <div className="grid grid-cols-2 gap-3">
               {step.fields.map((f) => (
-                <label
+                <FieldWithExtras
                   key={f.key}
-                  className={`flex flex-col gap-1 rounded-2xl bg-inset p-4 ${f.wide ? "col-span-2" : ""}`}
-                >
-                  <span className="text-xs tracking-[0.15em] text-muted uppercase">
-                    {f.label}
-                  </span>
-                  <input
-                    className="bg-transparent text-lg outline-none placeholder:text-white/35"
-                    placeholder={f.placeholder}
-                    inputMode={f.numeric ? "numeric" : undefined}
-                    value={value(f.key)}
-                    onChange={(e) =>
-                      update(
-                        f.key,
-                        f.numeric
-                          ? e.target.value.replace(/[^0-9.]/g, "")
-                          : e.target.value,
-                      )
-                    }
-                  />
-                </label>
+                  field={f}
+                  value={value(f.key)}
+                  onChange={(v) => update(f.key as "address", v)}
+                  after={
+                    step.slug === "home" && f.key === "listingUrl" ? (
+                      <div className="col-span-2 flex flex-col gap-2">
+                        <ListingPreview onApply={applyListing} />
+                        {listingNote && (
+                          <output className="rounded-2xl bg-inset px-4 py-3 text-sm text-muted">
+                            {listingNote}
+                          </output>
+                        )}
+                      </div>
+                    ) : null
+                  }
+                />
               ))}
             </div>
           )}
           {step.slug === "home" && (
             <p className="text-sm text-muted">
-              We keep the listing link for reference only. Listing import isn't
-              connected, so please enter the details yourself.
+              We keep the listing link for reference only and never fetch it.
+              Enter the details yourself, or share screenshots of the listing
+              above.
             </p>
           )}
         </section>
       )}
 
-      {step.custom === "rooms" && (
+      {loaded && step.custom === "rooms" && (
         <RoomsStep data={data} update={update} loaded={loaded} />
       )}
-
-      {step.slug === "review" && <Review data={data} />}
+      {loaded && step.custom === "needs" && (
+        <NeedsStep data={data} update={update} />
+      )}
+      {loaded && step.custom === "access" && (
+        <AccessStep data={data} rooms={rooms} update={update} />
+      )}
+      {step.custom === "inspiration" && <InspirationStep />}
+      {step.custom === "taste" && <TasteStep />}
+      {loaded && step.custom === "keep" && (
+        <KeepStep data={data} rooms={rooms} update={update} />
+      )}
+      {loaded && step.custom === "budget" && (
+        <BudgetStep data={data} update={update} />
+      )}
+      {loaded && step.custom === "review" && (
+        <ReviewStep
+          data={data}
+          rooms={rooms}
+          api={sync.api}
+          isSignedIn={sync.isSignedIn}
+        />
+      )}
 
       <div className="mt-auto flex flex-col gap-3 pt-4">
-        <button
-          type="button"
-          onClick={() => router.push(next ? `/journey/${next.slug}` : "/plan")}
-          className="min-h-14 rounded-3xl bg-cream text-lg font-semibold text-ink"
-        >
-          {step.cta ?? "Continue"}
-        </button>
+        {step.custom === "review" ? (
+          <CreatePlan sync={sync} label={step.cta ?? "Create my plan"} />
+        ) : step.custom === "rooms" ? (
+          <>
+            {roomsSave.kind === "error" && (
+              <div
+                role="alert"
+                className="rounded-3xl bg-amber-900/40 p-4 text-sm text-amber-100"
+              >
+                <p>We couldn't save your rooms: {roomsSave.message}</p>
+                <button
+                  type="button"
+                  onClick={() => void confirmRooms(true)}
+                  className="mt-2 min-h-11 underline underline-offset-4"
+                >
+                  Continue anyway (saved on this device)
+                </button>
+              </div>
+            )}
+            <button
+              type="button"
+              disabled={roomsSave.kind === "saving"}
+              onClick={() => void confirmRooms()}
+              className={primary}
+            >
+              {roomsSave.kind === "saving"
+                ? "Saving your rooms…"
+                : roomsSave.kind === "error"
+                  ? "Try again"
+                  : (step.cta ?? "Continue")}
+            </button>
+          </>
+        ) : (
+          <button type="button" onClick={goNext} className={primary}>
+            {step.cta ?? "Continue"}
+          </button>
+        )}
         <Link
           href={prev ? `/journey/${prev.slug}` : "/"}
-          className="text-muted"
+          className="inline-flex min-h-11 items-center text-muted"
         >
           ‹ Back
         </Link>
@@ -189,66 +295,40 @@ export function Journey({ slug }: { slug: string }) {
   );
 }
 
-function Review({ data }: { data: Record<string, string | string[]> }) {
-  const s = (k: string, fallback: string) => {
-    const v = data[k];
-    if (Array.isArray(v)) return v.length ? v.join(", ") : fallback;
-    return v || fallback;
-  };
-  const cards = [
-    {
-      n: "01",
-      label: "Home",
-      slug: "home",
-      title: s("address", "Your home"),
-      body: `${s("propertyType", "Home")} · ${s("beds", "?")} beds · ${s("baths", "?")} bath · ${s("area", "?")} m² · ${s("journey", "")}`,
-    },
-    {
-      n: "02",
-      label: "Household & access",
-      slug: "needs",
-      title: `${s("adults", "Adults")} · ${s("children", "no children")}`,
-      body: `${s("guests", "")} ${s("accessNeeds", "No confirmed access needs")}`,
-    },
-    {
-      n: "03",
-      label: "Style",
-      slug: "taste",
-      title: s("taste", "Taste not set"),
-      body: `Love: ${s("loves", "—")} · Avoid: ${s("dislikes", "—")}`,
-    },
-    {
-      n: "04",
-      label: "Keep",
-      slug: "keep",
-      title:
-        [s("keep1", ""), s("keep2", "")].filter(Boolean).join(" · ") ||
-        "Nothing kept",
-      body: `Find: ${s("find", "—")}`,
-    },
-    {
-      n: "05",
-      label: "Budget",
-      slug: "budget",
-      title: `£${s("budget", "—")}`,
-      body: `${s("timing", "")} ${s("priorities", "")}`,
-    },
-  ];
+function FieldWithExtras({
+  field,
+  value,
+  onChange,
+  after,
+}: {
+  field: NonNullable<Step["fields"]>[number];
+  value: string;
+  onChange: (v: string) => void;
+  after: React.ReactNode;
+}) {
   return (
-    <div className="flex flex-col gap-3">
-      {cards.map((c) => (
-        <Link
-          key={c.n}
-          href={`/journey/${c.slug}`}
-          className="rounded-3xl border border-white/10 bg-card p-5"
-        >
-          <p className="text-xs tracking-[0.2em] text-muted uppercase">
-            {c.n} {c.label} ↗
-          </p>
-          <h2 className="mt-3 font-serif text-2xl">{c.title}</h2>
-          <p className="mt-2 text-sm text-muted">{c.body}</p>
-        </Link>
-      ))}
-    </div>
+    <>
+      <label
+        className={`flex flex-col gap-1 rounded-2xl bg-inset p-4 focus-within:ring-2 focus-within:ring-cream/60 ${field.wide ? "col-span-2" : ""}`}
+      >
+        <span className="text-xs tracking-[0.15em] text-muted uppercase">
+          {field.label}
+        </span>
+        <input
+          className="bg-transparent text-lg outline-none placeholder:text-white/35"
+          placeholder={field.placeholder}
+          inputMode={field.numeric ? "numeric" : undefined}
+          value={value}
+          onChange={(e) =>
+            onChange(
+              field.numeric
+                ? e.target.value.replace(/[^0-9.]/g, "")
+                : e.target.value,
+            )
+          }
+        />
+      </label>
+      {after}
+    </>
   );
 }

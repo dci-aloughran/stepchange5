@@ -5,13 +5,15 @@ import {
   type FloorplanExtractResponse,
   UPLOAD_MAX_BYTES,
 } from "@stepchange/shared";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { journeyApi } from "@/lib/journey/api";
+import { ensureHome, withSyncPaused } from "@/lib/journey/sync";
 import {
   type HomeBasics,
   type ReconcileResult,
   roomsFromFloorPlan,
 } from "@/lib/rooms";
-import type { JourneyData } from "./journey";
+import { useServer } from "@/lib/server";
 
 const SERVER_URL =
   process.env.NEXT_PUBLIC_SERVER_URL ?? "http://localhost:8787";
@@ -122,52 +124,35 @@ async function api<T>(
   return body as T;
 }
 
-function toPence(value: unknown) {
-  const n = Number.parseFloat(String(value ?? "").replace(/[^0-9.]/g, ""));
-  return Number.isFinite(n) && n > 0 ? Math.round(n * 100) : undefined;
-}
-
+// Rooms read from the plan already exist on the server; serverIds maps each
+// new local room id to its server room so the journey sync updates them
+// rather than creating duplicates.
 export function FloorPlanUpload({
-  data,
-  update,
   basics,
   onRooms,
 }: {
-  data: JourneyData;
-  update: (key: string, value: string | string[]) => void;
   basics: HomeBasics;
-  onRooms: (result: ReconcileResult, notes: string[]) => void;
+  onRooms: (
+    result: ReconcileResult,
+    notes: string[],
+    serverIds: Record<string, string>,
+  ) => void;
 }) {
   const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { client } = useServer();
+  const journey = useMemo(() => journeyApi(client), [client]);
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const busy = phase.kind === "uploading" || phase.kind === "reading";
 
-  async function ensureHome(token: string, signal: AbortSignal) {
-    const existing = typeof data.homeId === "string" ? data.homeId : "";
-    if (existing) return existing;
-    const address = typeof data.address === "string" ? data.address.trim() : "";
-    const home = await api<{ id: string }>("/homes", token, {
-      method: "POST",
-      signal,
-      json: {
-        name: address || "My home",
-        journeyType: data.journey === "Buying a home" ? "buyer" : "homeowner",
-        address: address || null,
-        listing: {
-          bedrooms: basics.bedrooms,
-          bathrooms: basics.bathrooms,
-          floorAreaSqm: Number.parseFloat(String(data.area ?? "")) || undefined,
-          pricePence: toPence(data.price),
-        },
-      },
-    });
-    update("homeId", home.id);
-    return home.id;
+  // Automatic saves wait while the plan is read, so they never remove the
+  // rooms the server is creating from it.
+  function handleFile(original: File) {
+    return withSyncPaused(() => readPlan(original));
   }
 
-  async function handleFile(original: File) {
+  async function readPlan(original: File) {
     const controller = new AbortController();
     abortRef.current = controller;
     try {
@@ -180,30 +165,19 @@ export function FloorPlanUpload({
       const token = await getToken();
       if (!token) throw new Error("Please sign in again.");
 
-      let homeId = await ensureHome(token, controller.signal);
-      const send = (id: string) => {
-        const form = new FormData();
-        form.set("file", file);
-        form.set("purpose", "floor_plan");
-        form.set("homeId", id);
-        setPhase({ kind: "uploading", pct: 0 });
-        return uploadWithProgress(
-          form,
-          token,
-          (pct) => setPhase({ kind: "uploading", pct }),
-          controller.signal,
-        );
-      };
-      let uploaded: { upload: { id: string } };
-      try {
-        uploaded = await send(homeId);
-      } catch (e) {
-        // A saved home from another account/session: make a fresh one.
-        if (!(e instanceof ApiError && e.status === 404)) throw e;
-        update("homeId", "");
-        homeId = await ensureHome(token, controller.signal);
-        uploaded = await send(homeId);
-      }
+      // The user's one home (created from their answers if needed).
+      const homeId = await ensureHome(journey);
+      const form = new FormData();
+      form.set("file", file);
+      form.set("purpose", "floor_plan");
+      form.set("homeId", homeId);
+      setPhase({ kind: "uploading", pct: 0 });
+      const uploaded = await uploadWithProgress(
+        form,
+        token,
+        (pct) => setPhase({ kind: "uploading", pct }),
+        controller.signal,
+      );
 
       setPhase({ kind: "reading" });
       const extracted = await api<FloorplanExtractResponse>(
@@ -212,7 +186,18 @@ export function FloorPlanUpload({
         { method: "POST", json: {}, signal: controller.signal },
       );
       const result = roomsFromFloorPlan(extracted.rooms, basics);
-      onRooms(result, [...extracted.warnings, ...extracted.uncertaintyNotes]);
+      // roomsFromFloorPlan keeps the plan's rooms first, in order.
+      const fromPlan = result.rooms.filter((r) => r.source === "floor_plan");
+      const serverIds: Record<string, string> = {};
+      extracted.rooms.forEach((room, i) => {
+        const local = fromPlan[i];
+        if (local) serverIds[local.id] = room.id;
+      });
+      onRooms(
+        result,
+        [...extracted.warnings, ...extracted.uncertaintyNotes],
+        serverIds,
+      );
       setPhase({ kind: "done", roomCount: extracted.rooms.length });
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") {
@@ -260,7 +245,7 @@ export function FloorPlanUpload({
       ) : (
         <>
           <label
-            className={`flex min-h-12 cursor-pointer items-center justify-center rounded-2xl bg-cream font-semibold text-ink ${busy ? "pointer-events-none opacity-50" : ""}`}
+            className={`flex min-h-12 cursor-pointer items-center justify-center rounded-2xl bg-cream font-semibold text-ink focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-cream ${busy ? "pointer-events-none opacity-50" : ""}`}
           >
             {phase.kind === "done"
               ? "Upload a different plan"
