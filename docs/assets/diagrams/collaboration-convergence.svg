@@ -1,0 +1,60 @@
+<svg viewBox="0 0 900 640" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif" role="img" aria-label="Diagram showing Product Management, Tech, Claude and Design converging on the Home Furnishing Planner solution">
+  <defs>
+    <marker id="arrow3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4b5a52"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="640" fill="#f2ede4"/>
+  <text x="450" y="38" text-anchor="middle" font-size="22" font-weight="700" fill="#141c18">Four roles, one solution</text>
+  <text x="450" y="62" text-anchor="middle" font-size="13" fill="#4b5a52">How Product, Tech, Claude and Design came together to build Home Furnishing Planner</text>
+
+  <!-- Product Management: top-left -->
+  <rect x="60" y="110" width="320" height="110" rx="12" fill="#111a16"/>
+  <text x="80" y="138" font-size="15" font-weight="700" fill="#e6e0d5">Product Management</text>
+  <text x="80" y="160" font-size="12" fill="#a7b0a9">Wrote the PRD: user journeys, functional</text>
+  <text x="80" y="178" font-size="12" fill="#a7b0a9">requirements (FR-NN), hard constraints</text>
+  <text x="80" y="196" font-size="12" fill="#a7b0a9">(accessibility, mobile-first, upload trust)</text>
+
+  <!-- Tech: top-right -->
+  <rect x="520" y="110" width="320" height="110" rx="12" fill="#1c2722"/>
+  <text x="540" y="138" font-size="15" font-weight="700" fill="#e6e0d5">Tech</text>
+  <text x="540" y="160" font-size="12" fill="#a7b0a9">Built and owns the platform: monorepo,</text>
+  <text x="540" y="178" font-size="12" fill="#a7b0a9">API contracts, data model, deployment,</text>
+  <text x="540" y="196" font-size="12" fill="#a7b0a9">security and review of agent output</text>
+
+  <!-- Claude: bottom-left -->
+  <rect x="60" y="400" width="320" height="110" rx="12" fill="#8bc34a"/>
+  <text x="80" y="428" font-size="15" font-weight="700" fill="#141c18">Claude</text>
+  <text x="80" y="450" font-size="12" fill="#1c2722">Selected the technology stack from the</text>
+  <text x="80" y="468" font-size="12" fill="#1c2722">PRD's constraints and built it in time-boxed,</text>
+  <text x="80" y="486" font-size="12" fill="#1c2722">spec-driven agent waves</text>
+
+  <!-- Design: bottom-right -->
+  <rect x="520" y="400" width="320" height="110" rx="12" fill="#1c2722"/>
+  <text x="540" y="428" font-size="15" font-weight="700" fill="#e6e0d5">Design</text>
+  <text x="540" y="450" font-size="12" fill="#a7b0a9">Developed the Figma prototypes —</text>
+  <text x="540" y="468" font-size="12" fill="#a7b0a9">screens, flow and visual language —</text>
+  <text x="540" y="486" font-size="12" fill="#a7b0a9">now the styling source of truth</text>
+
+  <!-- Center: solution -->
+  <circle cx="450" cy="365" r="92" fill="#141c18"/>
+  <text x="450" y="352" text-anchor="middle" font-size="15" font-weight="700" fill="#f2ede4">Home Furnishing</text>
+  <text x="450" y="372" text-anchor="middle" font-size="15" font-weight="700" fill="#f2ede4">Planner</text>
+  <text x="450" y="394" text-anchor="middle" font-size="11" fill="#a7b0a9">deployed on Vercel</text>
+
+  <!-- Connectors: each role to the centre -->
+  <line x1="300" y1="220" x2="400" y2="300" stroke="#4b5a52" stroke-width="2" marker-end="url(#arrow3)"/>
+  <line x1="600" y1="220" x2="500" y2="300" stroke="#4b5a52" stroke-width="2" marker-end="url(#arrow3)"/>
+  <line x1="300" y1="400" x2="390" y2="345" stroke="#4b5a52" stroke-width="2" marker-end="url(#arrow3)"/>
+  <line x1="600" y1="400" x2="510" y2="345" stroke="#4b5a52" stroke-width="2" marker-end="url(#arrow3)"/>
+
+  <!-- Side connectors: PM -> Tech (spec handoff), Claude -> Design (wave-2 restyle) -->
+  <line x1="380" y1="150" x2="520" y2="150" stroke="#4b5a52" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <text x="450" y="140" text-anchor="middle" font-size="10" fill="#4b5a52">FR-NN specs</text>
+
+  <line x1="380" y1="455" x2="520" y2="455" stroke="#4b5a52" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <text x="450" y="445" text-anchor="middle" font-size="10" fill="#4b5a52">restyle from docs/figmamake</text>
+
+  <text x="450" y="600" text-anchor="middle" font-size="11" fill="#4b5a52">Each role fed the next: PRD → platform → agent build → design pass — see Collaboration for the full workflow.</text>
+</svg>

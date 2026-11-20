@@ -1,0 +1,66 @@
+<svg viewBox="0 0 900 640" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif" role="img" aria-label="Home Furnishing Planner technology stack diagram">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4b5a52"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="640" fill="#f2ede4"/>
+  <text x="450" y="34" text-anchor="middle" font-size="22" font-weight="700" fill="#141c18">Home Furnishing Planner — technology stack</text>
+
+  <!-- Client layer -->
+  <rect x="40" y="64" width="820" height="90" rx="12" fill="#111a16"/>
+  <text x="60" y="88" font-size="14" font-weight="700" fill="#e6e0d5">Client — app/</text>
+  <text x="60" y="112" font-size="13" fill="#a7b0a9">Next.js 16 (App Router) · React 19 · Tailwind 4 · mobile-first PWA</text>
+  <text x="60" y="132" font-size="13" fill="#a7b0a9">Clerk (@clerk/nextjs) for sign-in/session · styled from docs/figmamake design tokens</text>
+
+  <line x1="450" y1="154" x2="450" y2="188" stroke="#4b5a52" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="465" y="176" font-size="12" fill="#4b5a52">hc&lt;AppType&gt;() — typed RPC, no codegen</text>
+
+  <!-- Shared package -->
+  <rect x="300" y="192" width="300" height="56" rx="10" fill="#8bc34a"/>
+  <text x="450" y="216" text-anchor="middle" font-size="13" font-weight="700" fill="#141c18">packages/shared</text>
+  <text x="450" y="235" text-anchor="middle" font-size="12" fill="#1c2722">Zod schemas + domain types, used by app and server</text>
+
+  <line x1="450" y1="248" x2="450" y2="282" stroke="#4b5a52" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- API layer -->
+  <rect x="40" y="286" width="820" height="90" rx="12" fill="#1c2722"/>
+  <text x="60" y="310" font-size="14" font-weight="700" fill="#e6e0d5">API — server/</text>
+  <text x="60" y="334" font-size="13" fill="#a7b0a9">Hono 4 (TypeScript) · deployed as a Vercel Function (Fluid Compute)</text>
+  <text x="60" y="354" font-size="13" fill="#a7b0a9">@hono/zod-validator for request validation · @clerk/backend for auth middleware</text>
+
+  <!-- connectors down to services -->
+  <line x1="150" y1="376" x2="150" y2="420" stroke="#4b5a52" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="330" y1="376" x2="330" y2="420" stroke="#4b5a52" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="510" y1="376" x2="510" y2="420" stroke="#4b5a52" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="690" y1="376" x2="690" y2="420" stroke="#4b5a52" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Services row -->
+  <rect x="50" y="424" width="200" height="86" rx="10" fill="#f2ede4" stroke="#141c18" stroke-width="1.5"/>
+  <text x="150" y="450" text-anchor="middle" font-size="13" font-weight="700" fill="#141c18">Neon Postgres</text>
+  <text x="150" y="470" text-anchor="middle" font-size="11" fill="#4b5a52">via Drizzle ORM</text>
+  <text x="150" y="488" text-anchor="middle" font-size="11" fill="#4b5a52">profile, home, plan, taste</text>
+
+  <rect x="230" y="424" width="200" height="86" rx="10" fill="#f2ede4" stroke="#141c18" stroke-width="1.5"/>
+  <text x="330" y="450" text-anchor="middle" font-size="13" font-weight="700" fill="#141c18">Vercel Blob</text>
+  <text x="330" y="470" text-anchor="middle" font-size="11" fill="#4b5a52">private storage</text>
+  <text x="330" y="488" text-anchor="middle" font-size="11" fill="#4b5a52">secure uploads · floor plans</text>
+
+  <rect x="410" y="424" width="200" height="86" rx="10" fill="#f2ede4" stroke="#141c18" stroke-width="1.5"/>
+  <text x="510" y="450" text-anchor="middle" font-size="13" font-weight="700" fill="#141c18">Vercel AI Gateway</text>
+  <text x="510" y="470" text-anchor="middle" font-size="11" fill="#4b5a52">AI SDK 7 ("ai" package)</text>
+  <text x="510" y="488" text-anchor="middle" font-size="11" fill="#4b5a52">taste · layout · concepts</text>
+
+  <rect x="590" y="424" width="200" height="86" rx="10" fill="#f2ede4" stroke="#141c18" stroke-width="1.5"/>
+  <text x="690" y="450" text-anchor="middle" font-size="13" font-weight="700" fill="#141c18">Shopify connector</text>
+  <text x="690" y="470" text-anchor="middle" font-size="11" fill="#4b5a52">catalogue + normalisation</text>
+  <text x="690" y="488" text-anchor="middle" font-size="11" fill="#4b5a52">budget-aware ranking</text>
+
+  <!-- Deployment + tooling band -->
+  <rect x="40" y="534" width="820" height="46" rx="10" fill="#141c18"/>
+  <text x="60" y="562" font-size="13" fill="#e6e0d5" font-weight="700">Deployed on Vercel (app + server)</text>
+  <text x="430" y="562" font-size="13" fill="#a7b0a9">pnpm workspaces + Turborepo · Biome (lint/format) · TypeScript · Vitest</text>
+
+  <text x="450" y="612" text-anchor="middle" font-size="11" fill="#4b5a52">Monorepo: app/, server/, packages/shared — see docs/architecture.md</text>
+</svg>
