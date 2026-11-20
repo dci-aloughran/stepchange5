@@ -3,13 +3,17 @@ import { AccountLink } from "./account-link";
 
 export function Brand({ trailing }: { trailing?: string }) {
   return (
-    <div className="flex items-center justify-between gap-3">
-      <Link href="/" className="text-2xl font-semibold tracking-tight">
+    <div className="flex items-center justify-between gap-2">
+      <Link
+        href="/"
+        className="min-w-0 text-2xl font-semibold tracking-tight whitespace-nowrap"
+      >
         Deloitful<span className="text-accent">.</span>Home
       </Link>
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2">
         {trailing && (
-          <span className="text-xs tracking-[0.2em] text-muted uppercase">
+          // Dropped on the narrowest screens so the header never wraps.
+          <span className="text-xs tracking-[0.2em] text-muted uppercase max-[359px]:hidden">
             {trailing}
           </span>
         )}

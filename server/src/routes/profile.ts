@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import {
   AccessibilityNeedInputSchema,
   CreatePersonSchema,
@@ -15,6 +14,7 @@ import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 import { getDb, schema } from "../db/client.js";
 import { audit } from "../lib/audit.js";
+import { deleteClerkUser, subjectHash } from "../lib/ops/clerk.js";
 import { getOrCreateHousehold } from "../lib/ownership.js";
 import {
   assertOwnedPerson,
@@ -449,13 +449,19 @@ export const profileRoutes = new Hono<AuthEnv>()
       db.delete(schema.users).where(eq(schema.users.id, userId)),
     ]);
 
+    // The data is gone; now remove the sign-in identity so signing in again
+    // doesn't silently recreate an empty account. Failures are audited (warn)
+    // inside deleteClerkUser and don't undo the successful data deletion.
+    const identity = await deleteClerkUser(userId);
+
     // No personal data: a one-way hash lets support correlate a request.
     await audit("account.data_deleted", {
       userId: null,
       payload: {
-        subjectHash: createHash("sha256").update(userId).digest("hex"),
+        subjectHash: subjectHash(userId),
         homes: homeIds.length,
         blobsDeleted,
+        identityDeleted: identity.deleted,
       },
     });
     return c.body(null, 204);
