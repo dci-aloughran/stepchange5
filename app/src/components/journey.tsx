@@ -11,20 +11,6 @@ import { GROUPS, STEPS, type Step } from "./steps";
 
 const STORAGE_KEY = "deloitful.journey";
 
-const PROPERTY_TYPES = ["House", "Flat", "Bungalow", "Maisonette"];
-
-function analyseListing(url: string) {
-  let hash = 0;
-  for (const char of url) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
-  return {
-    propertyType: PROPERTY_TYPES[hash % PROPERTY_TYPES.length],
-    beds: String(2 + (hash % 4)),
-    baths: String(1 + (hash % 2)),
-    area: String(45 + (hash % 90)),
-    price: (120000 + (hash % 400000)).toLocaleString("en-GB"),
-  };
-}
-
 export type JourneyData = Record<string, string | string[]>;
 
 export function useJourneyState() {
@@ -170,21 +156,10 @@ export function Journey({ slug }: { slug: string }) {
             </div>
           )}
           {step.slug === "home" && (
-            <button
-              type="button"
-              disabled={!value("listingUrl")}
-              onClick={() => {
-                const parsed = analyseListing(value("listingUrl"));
-                update("propertyType", parsed.propertyType);
-                update("beds", parsed.beds);
-                update("baths", parsed.baths);
-                update("area", parsed.area);
-                update("price", parsed.price);
-              }}
-              className="min-h-11 rounded-full border border-white/15 px-4 text-sm disabled:opacity-40"
-            >
-              Analyse listing ↗
-            </button>
+            <p className="text-sm text-muted">
+              We keep the listing link for reference only. Listing import isn't
+              connected, so please enter the details yourself.
+            </p>
           )}
         </section>
       )}
