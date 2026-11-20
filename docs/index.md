@@ -30,3 +30,4 @@ see Vercel below — nothing here is part of the deployed app.
 - [Roadmap & changes](openspec/) — the product roadmap and OpenSpec change proposals.
 - [PRD](prd.md) — the original product requirements document.
 - [Quality reports](quality.md) — test coverage and code-structure reports, generated from the latest `main`.
+- [Pitch deck](pitch/) — the under-6-minute pitch: problem, demo video, and how we built it.
