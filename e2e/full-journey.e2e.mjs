@@ -107,6 +107,8 @@ try {
   check(s.homes.length === 1, `one home on the server (${s.homes.length})`);
   check(s.home?.listing?.pricePence === 32_500_000 && s.home?.listing?.bedrooms === 3, `listing saved to the home ${JSON.stringify(s.home?.listing)}`);
   check(s.rooms.filter((x) => x.roomType === "bedroom").length === 3 && s.rooms.every((x) => x.reviewedAt), `3 bedrooms, all ${s.rooms.length} rooms reviewed`);
+  const living = s.rooms.find((x) => /living/i.test(x.name));
+  check(living?.roomType === "living_room", `listing's living room typed as living_room (${living?.roomType})`);
   check(s.needs.length === 1 && s.needs[0].confirmed && s.household.budgetTotalPence === 600_000, "confirmed need + £6,000 budget saved");
 
   // 7. Plan the living room: brief → layout → products.

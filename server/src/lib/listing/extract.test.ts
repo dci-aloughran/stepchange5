@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { type ListingModelOutput, normaliseListing } from "./extract.js";
+import {
+  canonicalRoomType,
+  type ListingModelOutput,
+  normaliseListing,
+} from "./extract.js";
 
 const base: ListingModelOutput = {
   isListing: true,
@@ -86,5 +90,23 @@ describe("normaliseListing", () => {
     expect(r.notes[0]).toMatch(/doesn't look like a property listing/);
     expect(r.floorPlanUploadId).toBeNull();
     expect(r.photoUploadIds).toEqual([]);
+  });
+});
+
+describe("canonicalRoomType", () => {
+  it.each([
+    ["living_room", "Living Room", "living_room"],
+    ["living room", "Living Room", "living_room"],
+    ["reception", "Lounge", "living_room"],
+    ["", "Kitchen/Diner", "kitchen_diner"],
+    ["kitchen", "Kitchen", "kitchen"],
+    ["", "Bedroom One", "bedroom"],
+    ["", "En-suite", "en_suite"],
+    ["", "Family Bathroom", "bathroom"],
+    ["", "Downstairs WC", "wc"],
+    ["", "Entrance Hall", "hallway"],
+    ["", "Loft space", "other"],
+  ])("%j / %j → %s", (type, name, expected) => {
+    expect(canonicalRoomType(type, name)).toBe(expected);
   });
 });

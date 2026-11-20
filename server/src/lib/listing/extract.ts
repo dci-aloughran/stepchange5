@@ -3,6 +3,7 @@ import {
   type ListingExtractResponse,
   type ListingRoom,
   MeasurementStatusSchema,
+  RoomTypeSchema,
 } from "@stepchange/shared";
 import { generateText, Output } from "ai";
 import { z } from "zod";
@@ -34,7 +35,9 @@ export const ListingModelOutputSchema = z.object({
     .array(
       z.object({
         name: z.string(),
-        roomType: z.string(),
+        roomType: z
+          .string()
+          .describe(`One of: ${RoomTypeSchema.options.join(", ")}`),
         widthCm: z.number().positive().nullable(),
         lengthCm: z.number().positive().nullable(),
       }),
@@ -64,7 +67,7 @@ Rules you MUST follow:
 - propertyType: "house" for detached/semi-detached/terraced/end-of-terrace/town house/cottage; "flat" for flats/apartments/studios; "bungalow"; "maisonette". propertySubtype: the listing's own wording (e.g. "Semi-detached house").
 - bedrooms/bathrooms/receptions: only when stated (icons with numbers count as stated).
 - floorArea: only when a floor area is printed; keep the printed unit (sq ft -> "sqft", sq m/m² -> "sqm"). If both are printed, use sq m.
-- rooms: only rooms listed with their own entry (typically in the description or a room list). Convert dimensions to centimetres ("4.60m x 3.80m" -> 460 x 380; 15'1" x 12'5" -> 460 x 378). First number = widthCm, second = lengthCm. If a room has no printed size, include it with nulls. Do not invent rooms from the bedroom count. Ignore "max"/"into bay" qualifiers but mention them in notes.
+- rooms: only rooms listed with their own entry (typically in the description or a room list). Convert dimensions to centimetres ("4.60m x 3.80m" -> 460 x 380; 15'1" x 12'5" -> 460 x 378). First number = widthCm, second = lengthCm. roomType must be one of: living_room, kitchen, kitchen_diner, dining_room, bedroom, bathroom, en_suite, wc, study, playroom, hallway, landing, utility, conservatory, garage, other. If a room has no printed size, include it with nulls. Do not invent rooms from the bedroom count. Ignore "max"/"into bay" qualifiers but mention them in notes.
 - images: classify EVERY provided image/file by its zero-based index in the order given: listing_details (a screenshot showing price/description/key facts), property_photo (a photo of the property), floor_plan (a floor plan drawing), other.
 - keyFeatures: the listing's bullet points, verbatim but trimmed, max 20. summary: one or two plain sentences summarising the description, using only stated facts.
 - agent: the estate agent / branch name if shown. portal: the website or app the screenshot is from, if identifiable.
@@ -109,6 +112,40 @@ export async function callListingModel(
 }
 
 const SQFT_TO_SQM = 0.09290304;
+
+const ROOM_TYPE_PATTERNS: Array<[RegExp, string]> = [
+  [/en[\s-]?suite/, "en_suite"],
+  [/kitchen.*(diner|dining)|open[\s-]?plan/, "kitchen_diner"],
+  [/kitchen/, "kitchen"],
+  [/dining/, "dining_room"],
+  [/bed(room)?|nursery/, "bedroom"],
+  [/bath|shower/, "bathroom"],
+  [/\bwc\b|cloak|toilet/, "wc"],
+  [/living|lounge|sitting|reception|family room|snug/, "living_room"],
+  [/study|office/, "study"],
+  [/play/, "playroom"],
+  [/hall|entrance|porch/, "hallway"],
+  [/landing/, "landing"],
+  [/utility|laundry/, "utility"],
+  [/conservatory|sun ?room|orangery/, "conservatory"],
+  [/garage/, "garage"],
+];
+
+// Map the model's room type (or the room's name) onto our room types.
+export function canonicalRoomType(type: string, name: string): string {
+  const t = type
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+  if ((RoomTypeSchema.options as readonly string[]).includes(t)) return t;
+  for (const text of [type, name]) {
+    const lower = text.toLowerCase();
+    for (const [re, value] of ROOM_TYPE_PATTERNS) {
+      if (re.test(lower)) return value;
+    }
+  }
+  return "other";
+}
 const DETAIL_LABELS: Array<[keyof ListingDetails, string]> = [
   ["pricePence", "price"],
   ["address", "address"],
@@ -151,7 +188,7 @@ export function normaliseListing(
     const known = r.widthCm != null && r.lengthCm != null;
     return {
       name: r.name.trim(),
-      roomType: r.roomType,
+      roomType: canonicalRoomType(r.roomType, r.name),
       widthCm: known ? Math.round(r.widthCm as number) : null,
       lengthCm: known ? Math.round(r.lengthCm as number) : null,
       // Sizes printed in the listing are the agent's figures, not verified.
