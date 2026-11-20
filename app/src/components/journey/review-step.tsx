@@ -10,8 +10,8 @@ import {
   needProblem,
   needSummary,
   personLabel,
-  poundsToPence,
   possessionSize,
+  poundsToPence,
 } from "@/lib/journey/mapping";
 import type { JourneyData, LocalPerson } from "@/lib/journey/types";
 import { countOf, type PlanRoom } from "@/lib/rooms";
@@ -42,7 +42,8 @@ export function householdTitle(people: LocalPerson[]): string {
   if (coming) {
     parts.push(coming === 1 ? "A baby on the way" : `${coming} babies due`);
   }
-  if (visitors) parts.push(count(visitors, "regular visitor", "regular visitors"));
+  if (visitors)
+    parts.push(count(visitors, "regular visitor", "regular visitors"));
   return `${parts.join(". ")}.`;
 }
 
@@ -128,7 +129,9 @@ export function ReviewStep({
           data.beds && `${data.beds} beds`,
           data.baths && `${data.baths} bath`,
           data.area && `${data.area} m²`,
-          poundsToPence(data.price) ? formatPounds(poundsToPence(data.price)) : "",
+          poundsToPence(data.price)
+            ? formatPounds(poundsToPence(data.price))
+            : "",
         ]) || "Details not added yet",
         data.journey ?? "",
         rooms

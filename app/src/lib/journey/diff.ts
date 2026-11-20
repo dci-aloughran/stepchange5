@@ -18,7 +18,11 @@ export type CollectionPlan<S, P> = {
   skipped: string[];
 };
 
-export function planCollection<L extends { id: string }, S extends { id: string }, P>(
+export function planCollection<
+  L extends { id: string },
+  S extends { id: string },
+  P,
+>(
   local: L[],
   map: Record<string, string> | undefined,
   server: S[],

@@ -56,9 +56,8 @@ export function AccessStep({
           wheelchair or a clear route width. We don't need to know why.
         </p>
         <p className="mt-2">
-          Only <strong className="text-foreground">confirmed</strong> needs
-          are treated as hard layout rules. Others guide the plan as
-          preferences.
+          Only <strong className="text-foreground">confirmed</strong> needs are
+          treated as hard layout rules. Others guide the plan as preferences.
         </p>
       </section>
 
@@ -235,10 +234,7 @@ function NeedCard({
               key={f.key}
               label={f.label}
               value={String(need.params[f.key] ?? "")}
-              options={[
-                { value: "", label: "Not sure" },
-                ...(f.options ?? []),
-              ]}
+              options={[{ value: "", label: "Not sure" }, ...(f.options ?? [])]}
               onChange={(v) => setParam(f.key, v)}
             />
           ) : (

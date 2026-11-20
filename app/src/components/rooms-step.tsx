@@ -2,6 +2,9 @@
 
 import type { MeasurementStatus, RoomType } from "@stepchange/shared";
 import { useEffect, useState } from "react";
+import { patchJourney, readRooms, writeRooms } from "@/lib/journey/store";
+import type { JourneyData } from "@/lib/journey/types";
+import type { UpdateJourney } from "@/lib/journey/use-journey";
 import {
   clampCount,
   countOf,
@@ -17,9 +20,6 @@ import {
   STATUS_LABELS,
   templateRooms,
 } from "@/lib/rooms";
-import { patchJourney, readRooms, writeRooms } from "@/lib/journey/store";
-import type { JourneyData } from "@/lib/journey/types";
-import type { UpdateJourney } from "@/lib/journey/use-journey";
 import { FloorPlanUpload } from "./floor-plan-upload";
 
 export function basicsFrom(data: JourneyData): HomeBasics {

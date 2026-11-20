@@ -100,7 +100,9 @@ export function journeyApi(client: Client): JourneyApi {
     listPersons: async () => readJson(await p.persons.$get()),
     createPerson: async (json) => readJson(await p.persons.$post({ json })),
     updatePerson: async (personId, json) =>
-      readJson(await p.persons[":personId"].$patch({ param: { personId }, json })),
+      readJson(
+        await p.persons[":personId"].$patch({ param: { personId }, json }),
+      ),
     deletePerson: async (personId) =>
       noContent(await p.persons[":personId"].$delete({ param: { personId } })),
     listNeeds: async () => readJson(await p.accessibility.$get()),
@@ -110,7 +112,9 @@ export function journeyApi(client: Client): JourneyApi {
         await p.accessibility[":needId"].$patch({ param: { needId }, json }),
       ),
     deleteNeed: async (needId) =>
-      noContent(await p.accessibility[":needId"].$delete({ param: { needId } })),
+      noContent(
+        await p.accessibility[":needId"].$delete({ param: { needId } }),
+      ),
     listPossessions: async () => readJson(await p.possessions.$get()),
     createPossession: async (json) =>
       readJson(await p.possessions.$post({ json })),

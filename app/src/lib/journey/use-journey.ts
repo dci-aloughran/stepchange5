@@ -12,12 +12,7 @@ import type { PlanRoom } from "../rooms";
 import { useServer } from "../server";
 import { type JourneyApi, journeyApi } from "./api";
 import { contentKey, hasAnswers } from "./mapping";
-import {
-  onJourneyChange,
-  patchJourney,
-  readJourney,
-  readRooms,
-} from "./store";
+import { onJourneyChange, patchJourney, readJourney, readRooms } from "./store";
 import {
   claimForUser,
   localStore,
@@ -90,8 +85,7 @@ let timer: ReturnType<typeof setTimeout> | null = null;
 // Restore is checked once per signed-in user before any automatic save, so
 // an empty device never overwrites progress saved from another one.
 let restoreCheckedFor: string | null = null;
-let restoreResult: { restored: boolean; lastStep: string | null } | null =
-  null;
+let restoreResult: { restored: boolean; lastStep: string | null } | null = null;
 
 function friendly(e: unknown) {
   const msg = e instanceof Error ? e.message : "";

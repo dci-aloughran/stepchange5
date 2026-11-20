@@ -259,7 +259,10 @@ function PersonCard({
               placeholder="Years"
               value={person.ageYears ?? ""}
               onChange={(e) => {
-                const n = Number.parseInt(e.target.value.replace(/\D/g, ""));
+                const n = Number.parseInt(
+                  e.target.value.replace(/\D/g, ""),
+                  10,
+                );
                 onChange({
                   ageYears: Number.isFinite(n) ? Math.min(120, n) : null,
                 });

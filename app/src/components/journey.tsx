@@ -78,7 +78,7 @@ export function Journey({ slug }: { slug: string }) {
   };
   const goNext = () => router.push(next ? `/journey/${next.slug}` : "/plan");
 
-  async function useTheseRooms(skipSave = false) {
+  async function confirmRooms(skipSave = false) {
     const current = readRooms() ?? rooms ?? [];
     patchJourney({ reviewedRooms: reviewedRoomMap(current) });
     if (sync.isSignedIn && sync.ready && !skipSave) {
@@ -259,7 +259,7 @@ export function Journey({ slug }: { slug: string }) {
                 <p>We couldn't save your rooms: {roomsSave.message}</p>
                 <button
                   type="button"
-                  onClick={() => void useTheseRooms(true)}
+                  onClick={() => void confirmRooms(true)}
                   className="mt-2 min-h-11 underline underline-offset-4"
                 >
                   Continue anyway (saved on this device)
@@ -269,7 +269,7 @@ export function Journey({ slug }: { slug: string }) {
             <button
               type="button"
               disabled={roomsSave.kind === "saving"}
-              onClick={() => void useTheseRooms()}
+              onClick={() => void confirmRooms()}
               className={primary}
             >
               {roomsSave.kind === "saving"
