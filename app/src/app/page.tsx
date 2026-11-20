@@ -1,42 +1,50 @@
 import { HealthResponseSchema } from "@stepchange/shared";
+import Link from "next/link";
+import { Brand } from "@/components/journey";
 import { api } from "@/lib/api";
 
-type ServerStatus =
-  | { ok: true; service: string; version: string }
-  | { ok: false };
-
-async function getServerStatus(): Promise<ServerStatus> {
+async function serverOk(): Promise<boolean> {
   try {
     const res = await api.health.$get(undefined, {
       init: { cache: "no-store" },
     });
-    if (!res.ok) return { ok: false };
-
-    const body = HealthResponseSchema.parse(await res.json());
-    return { ok: true, service: body.service, version: body.version };
+    return res.ok && HealthResponseSchema.safeParse(await res.json()).success;
   } catch {
-    return { ok: false };
+    return false;
   }
 }
 
-export default async function Home() {
-  const status = await getServerStatus();
+export default async function Start() {
+  const ok = await serverOk();
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-4 py-12 text-center">
-      <h1 className="text-2xl font-semibold">Home Furnishing Planner</h1>
-      <p className="text-sm text-neutral-500">
-        See how a home could work for your real life before you spend money
-        furnishing it.
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 px-5 pt-8 pb-6">
+      <Brand />
+      <p className="text-xs tracking-[0.2em] text-muted uppercase">
+        Development preview
       </p>
-      <p
-        className="rounded-full border px-4 py-2 text-sm"
-        data-testid="server-status"
+      <div className="mt-auto flex flex-col gap-4">
+        <p className="text-xs tracking-[0.2em] text-muted uppercase">
+          Your home. In real life.
+        </p>
+        <h1 className="font-serif text-5xl leading-[1.05]">
+          Before you buy. Before you furnish.
+        </h1>
+        <p className="text-lg">Plan how your real home could work for you.</p>
+        <p className="text-muted">Needs first. Rooms next. Products last.</p>
+        <p className="text-sm text-muted">
+          Explore a sample journey. Planning, uploads and shopping are not live
+          in this prototype.
+        </p>
+      </div>
+      <Link
+        href="/journey/home"
+        className="flex min-h-14 items-center justify-center rounded-3xl bg-cream text-lg font-semibold text-ink"
       >
-        Server:{" "}
-        {status.ok
-          ? `ok (${status.service} v${status.version})`
-          : "unreachable"}
+        Start with your home
+      </Link>
+      <p className="text-xs text-muted" data-testid="server-status">
+        Server: {ok ? "ok" : "unreachable"}
       </p>
     </main>
   );
