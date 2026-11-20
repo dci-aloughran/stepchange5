@@ -114,15 +114,17 @@ export function scoreCandidate(p: Rankable, ctx: RankContext): ScoreBreakdown {
   const matchedReq = ctx.requirementKeywords.filter((k) => titleLc.includes(k));
   const matchedTaste = ctx.tasteKeywords.filter((k) => haystack.includes(k));
 
-  const fitScore = { fits: 35, unbounded: 20, unknown: 12, exceeds: 0 }[fit];
+  // Weights (max 100): fit 40, relevance 15, taste 20, price 15,
+  // availability 7, delivery 3. A verified fit outweighs any taste match.
+  const fitScore = { fits: 40, unbounded: 22, unknown: 12, exceeds: 0 }[fit];
   const relevance = ctx.requirementKeywords.length
     ? Math.round((15 * matchedReq.length) / ctx.requirementKeywords.length)
     : 8;
   const taste = ctx.tasteKeywords.length
     ? Math.round(
-        (25 * matchedTaste.length) / Math.min(ctx.tasteKeywords.length, 5),
+        (20 * matchedTaste.length) / Math.min(ctx.tasteKeywords.length, 5),
       )
-    : 12;
+    : 10;
 
   let price = 0;
   let pricePosition: ScoreBreakdown["pricePosition"] = "unknown";
@@ -159,7 +161,7 @@ export function scoreCandidate(p: Rankable, ctx: RankContext): ScoreBreakdown {
   const components = {
     fit: fitScore,
     relevance: Math.min(15, relevance),
-    taste: Math.min(25, taste),
+    taste: Math.min(20, taste),
     price,
     availability,
     delivery,
