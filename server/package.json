@@ -10,16 +10,26 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "dotenv -e .env -- drizzle-kit migrate"
   },
   "dependencies": {
+    "@clerk/backend": "^3.31.1",
+    "@hono/zod-validator": "^0.9.1",
+    "@neondatabase/serverless": "^1.2.1",
     "@stepchange/shared": "workspace:*",
+    "@vercel/blob": "^2.9.0",
+    "ai": "^7.0.177",
+    "drizzle-orm": "^0.45.4",
     "hono": "^4.13.19",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@hono/node-server": "^2.1.11",
     "@types/node": "^24.19.2",
+    "dotenv-cli": "^11.1.0",
+    "drizzle-kit": "^0.31.11",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "vitest": "^5.1.1"

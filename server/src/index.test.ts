@@ -1,6 +1,6 @@
 import { HealthResponseSchema } from "@stepchange/shared";
 import { describe, expect, it } from "vitest";
-import app from "./index";
+import app from "./index.js";
 
 describe("GET /health", () => {
   it("returns a valid health response", async () => {
