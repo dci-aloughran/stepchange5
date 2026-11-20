@@ -61,7 +61,8 @@ describe("validate()", () => {
       widthCm: -1,
     });
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toMatch(/^widthCm: /);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toMatch(/^widthCm: /);
   });
 
   it("passes valid bodies through", async () => {
