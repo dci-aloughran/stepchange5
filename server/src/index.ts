@@ -7,6 +7,7 @@ import { audit } from "./lib/audit.js";
 import { isAllowedOrigin } from "./lib/origins.js";
 import { conceptRoutes } from "./routes/concepts.js";
 import { homeRoutes } from "./routes/homes.js";
+import { internalRoutes } from "./routes/internal.js";
 import { planRoutes } from "./routes/plans.js";
 import { productRoutes } from "./routes/products.js";
 import { profileRoutes } from "./routes/profile.js";
@@ -40,7 +41,8 @@ const app = new Hono()
   .route("/taste", tasteRoutes)
   .route("/plans", planRoutes)
   .route("/concepts", conceptRoutes)
-  .route("/products", productRoutes);
+  .route("/products", productRoutes)
+  .route("/internal", internalRoutes);
 
 app.onError(async (err, c) => {
   if (err instanceof HTTPException) {
