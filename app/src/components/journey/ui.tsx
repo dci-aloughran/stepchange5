@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { type ReactNode, useId } from "react";
 
 // Small shared building blocks for the journey steps (match brand tokens).
 
@@ -57,10 +57,14 @@ export function TextField({
   wide?: boolean;
   hint?: string;
 }) {
+  const id = useId();
   return (
-    <label className={`${fieldBox} ${wide ? "col-span-2" : ""}`}>
-      <span className={fieldLabel}>{label}</span>
+    <div className={`${fieldBox} ${wide ? "col-span-2" : ""}`}>
+      <label htmlFor={id} className={fieldLabel}>
+        {label}
+      </label>
       <input
+        id={id}
         className={inputClass}
         value={value}
         placeholder={placeholder}
@@ -72,7 +76,7 @@ export function TextField({
         }
       />
       {hint && <span className="text-xs text-muted">{hint}</span>}
-    </label>
+    </div>
   );
 }
 
@@ -89,10 +93,14 @@ export function SelectField({
   options: { value: string; label: string }[];
   wide?: boolean;
 }) {
+  const id = useId();
   return (
-    <label className={`${fieldBox} ${wide ? "col-span-2" : ""}`}>
-      <span className={fieldLabel}>{label}</span>
+    <div className={`${fieldBox} ${wide ? "col-span-2" : ""}`}>
+      <label htmlFor={id} className={fieldLabel}>
+        {label}
+      </label>
       <select
+        id={id}
         className={`${inputClass} min-h-11`}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -103,7 +111,7 @@ export function SelectField({
           </option>
         ))}
       </select>
-    </label>
+    </div>
   );
 }
 
