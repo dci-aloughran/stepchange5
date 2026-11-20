@@ -1,17 +1,12 @@
 "use client";
 
-import type { ListingExtractResponse } from "@stepchange/shared";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { InspirationStep } from "@/components/taste/inspiration-step";
 import { TasteStep } from "@/components/taste/taste-step";
-import {
-  listingAnswers,
-  listingRooms,
-  reviewedRoomMap,
-} from "@/lib/journey/mapping";
+import { reviewedRoomMap } from "@/lib/journey/mapping";
 import { patchJourney, readRooms, writeRooms } from "@/lib/journey/store";
 import type { JourneyData } from "@/lib/journey/types";
 import { useJourneyData, useJourneySync } from "@/lib/journey/use-journey";
@@ -23,7 +18,6 @@ import { KeepStep } from "./journey/keep-step";
 import { NeedsStep } from "./journey/needs-step";
 import { ReviewStep } from "./journey/review-step";
 import { SyncStatusLine } from "./journey/sync-status";
-import { ListingPreview } from "./listing/listing-preview";
 import { basicsFrom, RoomsStep } from "./rooms-step";
 import { GROUPS, STEPS, type Step } from "./steps";
 
@@ -64,7 +58,6 @@ export function Journey({ slug }: { slug: string }) {
   const [roomsSave, setRoomsSave] = useState<
     { kind: "idle" } | { kind: "saving" } | { kind: "error"; message: string }
   >({ kind: "idle" });
-  const [listingNote, setListingNote] = useState("");
 
   // MB-005: remember where the user is so another device can resume here.
   // biome-ignore lint/correctness/useExhaustiveDependencies: once per step
@@ -95,17 +88,6 @@ export function Journey({ slug }: { slug: string }) {
     }
     setRoomsSave({ kind: "idle" });
     goNext();
-  }
-
-  function applyListing(result: ListingExtractResponse) {
-    const nextData = patchJourney(listingAnswers(result));
-    const seeded = listingRooms(result, readRooms(), basicsFrom(nextData));
-    if (seeded) writeRooms(seeded);
-    setListingNote(
-      seeded
-        ? `Filled in from your listing, with ${seeded.length} rooms to review on the next step. Check every value.`
-        : "Filled in from your listing. Check every value before continuing.",
-    );
   }
 
   const restored = sync.restored;
@@ -189,33 +171,14 @@ export function Journey({ slug }: { slug: string }) {
           {step.fields && (
             <div className="grid grid-cols-2 gap-3">
               {step.fields.map((f) => (
-                <FieldWithExtras
+                <Field
                   key={f.key}
                   field={f}
                   value={value(f.key)}
                   onChange={(v) => update(f.key as "address", v)}
-                  after={
-                    step.slug === "home" && f.key === "listingUrl" ? (
-                      <div className="col-span-2 flex flex-col gap-2">
-                        <ListingPreview onApply={applyListing} />
-                        {listingNote && (
-                          <output className="rounded-2xl bg-inset px-4 py-3 text-sm text-muted">
-                            {listingNote}
-                          </output>
-                        )}
-                      </div>
-                    ) : null
-                  }
                 />
               ))}
             </div>
-          )}
-          {step.slug === "home" && (
-            <p className="text-sm text-muted">
-              We keep the listing link for reference only and never fetch it.
-              Enter the details yourself, or share screenshots of the listing
-              above.
-            </p>
           )}
         </section>
       )}
@@ -295,16 +258,14 @@ export function Journey({ slug }: { slug: string }) {
   );
 }
 
-function FieldWithExtras({
+function Field({
   field,
   value,
   onChange,
-  after,
 }: {
   field: NonNullable<Step["fields"]>[number];
   value: string;
   onChange: (v: string) => void;
-  after: React.ReactNode;
 }) {
   return (
     <>
@@ -328,7 +289,6 @@ function FieldWithExtras({
           }
         />
       </label>
-      {after}
     </>
   );
 }

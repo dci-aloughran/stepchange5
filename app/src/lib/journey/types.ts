@@ -76,15 +76,11 @@ export type JourneyData = {
   // Home step (strings as typed by the user).
   journey?: string;
   propertyType?: string;
-  listingUrl?: string;
   address?: string;
   beds?: string;
   baths?: string;
   area?: string;
   price?: string;
-  listingDescription?: string;
-  listingPhotoUploadIds?: string[];
-  listingFloorPlanUploadId?: string | null;
 
   // Needs step.
   people?: LocalPerson[];

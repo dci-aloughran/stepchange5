@@ -53,6 +53,7 @@ export const UploadPurposeSchema = z.enum([
   "floor_plan",
   "room_photo",
   "inspiration",
+  // Retired listing-preview uploads: still readable, no longer accepted.
   "listing",
 ]);
 export type UploadPurpose = z.infer<typeof UploadPurposeSchema>;
