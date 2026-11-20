@@ -46,6 +46,10 @@ export function reporter() {
 // test needs an account, and always call session.close() in a finally block.
 export async function startSession({
   viewport = { width: 390, height: 844 },
+  headed = process.env.E2E_HEADED === "1",
+  slowMo = 0,
+  deviceScaleFactor = 1,
+  windowSize = null,
 } = {}) {
   const email = `e2e+${Date.now()}${Math.floor(Math.random() * 1e4)}@example.com`;
   const res = await fetch(`${CLERK_API}/users`, {
@@ -65,9 +69,13 @@ export async function startSession({
   });
   const browser = await chromium.launch({
     channel: "chrome",
-    headless: process.env.E2E_HEADED !== "1",
+    headless: !headed,
+    slowMo,
+    args: windowSize
+      ? [`--window-size=${windowSize.width},${windowSize.height}`]
+      : [],
   });
-  const page = await browser.newPage({ viewport });
+  const page = await browser.newPage({ viewport, deviceScaleFactor });
 
   return {
     page,
