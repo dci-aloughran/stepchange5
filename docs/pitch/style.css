@@ -1,5 +1,12 @@
 /* Deloitful.Home pitch deck theme — Stone palette, matches docs/figmamake. */
 
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: #111a16;
+}
+
 :root {
   --color-background: #111a16;
   --color-foreground: #f2ede4;
@@ -52,11 +59,11 @@
   margin: 0;
 }
 
-.reveal section {
+.reveal .slides > section {
   padding: 48px 64px;
   height: 100%;
   box-sizing: border-box;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   justify-content: center;
   gap: 0.6em;
