@@ -4,16 +4,21 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { RoomsStep } from "./rooms-step";
 import { GROUPS, STEPS, type Step } from "./steps";
 
 const STORAGE_KEY = "deloitful.journey";
 
-function useJourneyState() {
-  const [data, setData] = useState<Record<string, string | string[]>>({});
+export type JourneyData = Record<string, string | string[]>;
+
+export function useJourneyState() {
+  const [data, setData] = useState<JourneyData>({});
+  const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     try {
       setData(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}"));
     } catch {}
+    setLoaded(true);
   }, []);
   const update = (key: string, value: string | string[]) => {
     setData((prev) => {
@@ -22,7 +27,7 @@ function useJourneyState() {
       return next;
     });
   };
-  return { data, update };
+  return { data, update, loaded };
 }
 
 export function Brand({ trailing }: { trailing?: string }) {
@@ -60,7 +65,7 @@ function Stepper({ current }: { current: Step["group"] }) {
 
 export function Journey({ slug }: { slug: string }) {
   const router = useRouter();
-  const { data, update } = useJourneyState();
+  const { data, update, loaded } = useJourneyState();
   const index = Math.max(
     0,
     STEPS.findIndex((s) => s.slug === slug),
@@ -87,25 +92,27 @@ export function Journey({ slug }: { slug: string }) {
       </header>
 
       {(step.fields || step.choices) && (
-        <section className="flex flex-col gap-3 rounded-3xl border border-white/10 bg-card p-4">
-          {step.choices && (
-            <fieldset className="flex flex-col gap-2">
+        <section className="flex flex-col gap-5 rounded-3xl border border-white/10 bg-card p-4">
+          {step.choices?.map((choice) => (
+            <fieldset key={choice.key} className="flex flex-col gap-2">
               <legend className="mb-2 text-xs tracking-[0.2em] text-muted uppercase">
-                {step.choices.label}
+                {choice.label}
               </legend>
               <div className="flex flex-wrap gap-2">
-                {step.choices.options.map((o) => {
-                  const selected = list(step.choices?.key ?? "").includes(o);
+                {choice.options.map((o) => {
+                  const selected = choice.single
+                    ? value(choice.key) === o
+                    : list(choice.key).includes(o);
                   return (
                     <button
                       type="button"
                       key={o}
                       aria-pressed={selected}
                       onClick={() => {
-                        const k = step.choices?.key ?? "";
-                        const cur = list(k);
+                        if (choice.single) return update(choice.key, o);
+                        const cur = list(choice.key);
                         update(
-                          k,
+                          choice.key,
                           selected ? cur.filter((x) => x !== o) : [...cur, o],
                         );
                       }}
@@ -117,7 +124,7 @@ export function Journey({ slug }: { slug: string }) {
                 })}
               </div>
             </fieldset>
-          )}
+          ))}
           {step.fields && (
             <div className="grid grid-cols-2 gap-3">
               {step.fields.map((f) => (
@@ -131,14 +138,26 @@ export function Journey({ slug }: { slug: string }) {
                   <input
                     className="bg-transparent text-lg outline-none placeholder:text-white/35"
                     placeholder={f.placeholder}
+                    inputMode={f.numeric ? "numeric" : undefined}
                     value={value(f.key)}
-                    onChange={(e) => update(f.key, e.target.value)}
+                    onChange={(e) =>
+                      update(
+                        f.key,
+                        f.numeric
+                          ? e.target.value.replace(/[^0-9.]/g, "")
+                          : e.target.value,
+                      )
+                    }
                   />
                 </label>
               ))}
             </div>
           )}
         </section>
+      )}
+
+      {step.custom === "rooms" && (
+        <RoomsStep data={data} update={update} loaded={loaded} />
       )}
 
       {step.slug === "review" && <Review data={data} />}
@@ -174,7 +193,7 @@ function Review({ data }: { data: Record<string, string | string[]> }) {
       label: "Home",
       slug: "home",
       title: s("address", "Your home"),
-      body: `${s("beds", "?")} beds · ${s("baths", "?")} bath · ${s("area", "?")} m² · ${s("journey", "")}`,
+      body: `${s("propertyType", "Home")} · ${s("beds", "?")} beds · ${s("baths", "?")} bath · ${s("area", "?")} m² · ${s("journey", "")}`,
     },
     {
       n: "02",

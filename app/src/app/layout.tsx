@@ -1,3 +1,4 @@
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata, Viewport } from "next";
 import { DM_Serif_Display, Inter } from "next/font/google";
 import "./globals.css";
@@ -27,7 +28,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${inter.variable} ${display.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <ClerkProvider>{children}</ClerkProvider>
+      </body>
     </html>
   );
 }
