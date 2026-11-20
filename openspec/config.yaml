@@ -1,0 +1,26 @@
+schema: spec-driven
+
+context: |
+  Product: Home Furnishing Planner (see /openspec.yaml for the full roadmap).
+  Monorepo: pnpm workspaces + Turborepo.
+    app/     — Next.js (App Router, TypeScript, Tailwind), mobile-first PWA.
+    server/  — TypeScript, Hono, deployed as a Vercel Function.
+    packages/shared/ — Zod schemas and domain types shared by app and server.
+  Principle: functional planning (room brief, layout, furnishing requirements)
+  precedes image generation; the system recommends the requirement first and
+  the product second.
+  Hard constraints: accessibility requirements are hard layout constraints,
+  not styling preferences; never present an inferred measurement as exact or
+  claim regulatory compliance; every upload is untrusted until it passes
+  defence-in-depth validation and quarantine; the product is designed and
+  tested mobile-first to WCAG 2.2 AA.
+
+rules:
+  proposal:
+    - Cite the PRD functional requirement IDs (FR-NN) the change implements or affects.
+    - State the mobile-first and accessibility impact, even if "none".
+    - State whether the change touches file uploads; if so, confirm it reuses the shared upload-security pipeline rather than adding a parallel path.
+  specs:
+    - Write requirements as SHALL statements with WHEN/THEN scenarios.
+    - Reference the PRD FR ID(s) each requirement derives from.
+    - Do not describe extracted or generated measurements as exact or verified unless the requirement explicitly says so.

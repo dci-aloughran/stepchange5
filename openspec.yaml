@@ -1,0 +1,169 @@
+# Home Furnishing Planner — product & implementation roadmap
+#
+# This is the human-readable roadmap for the project. The OpenSpec CLI's own
+# project config lives separately at openspec/config.yaml; this file maps the
+# PRD (docs/PRD v1.docx) to capabilities and an ordered sequence of
+# openspec/changes/<id> proposals.
+
+product:
+  name: Home Furnishing Planner
+  source: docs/PRD v1.docx (PRD v0.1)
+  vision: >
+    Help people see how a home could work for their real life before they
+    spend money furnishing it, for both prospective buyers and existing
+    homeowners.
+  core_principle: >
+    Translate household needs + a specific property + personal inspiration
+    into a feasible, visual and shoppable home plan. Functional planning
+    (room brief, layout, furnishing requirements) precedes image generation.
+    The system recommends the requirement first and the product second.
+  hard_constraints:
+    - Accessibility requirements are hard constraints in the functional
+      brief and layout engine, not optional styling preferences.
+    - Never represent an inferred measurement as exact; never claim an
+      AI-generated plan proves regulatory compliance or suitability for an
+      individual.
+    - Every upload is untrusted until it passes defence-in-depth validation
+      and quarantine.
+    - The experience is designed and tested mobile-first (WCAG 2.2 AA).
+
+architecture:
+  monorepo: pnpm workspaces + Turborepo
+  app:
+    path: app/
+    stack: Next.js (App Router, TypeScript, Tailwind), mobile-first PWA
+    role: End-user UI for all journeys in the PRD's user journey (section 10).
+  server:
+    path: server/
+    stack: TypeScript, Hono, deployed as a Vercel Function (Fluid Compute)
+    role: >
+      API for household/home/taste/plan/product/ledger domains; orchestrates
+      AI calls, uploads and connectors. Exposes a typed contract (hono/client)
+      consumed directly by app/.
+  shared:
+    path: packages/shared/
+    role: Zod schemas and domain types shared by app and server.
+  planned_platform_services:
+    - name: Postgres (Vercel Marketplace)
+      used_by: [household-profile, home-model, taste-profile, room-planning,
+        visual-concepts, product-catalogue, budget, charity-ledger]
+    - name: Vercel Blob (private)
+      used_by: [secure-uploads, home-model]
+    - name: Vercel Sandbox
+      used_by: [secure-uploads]
+      note: isolated, least-privilege decoding/parsing per FR-74.
+    - name: AI SDK 7 + AI Gateway
+      used_by: [taste-profile, room-planning, visual-concepts]
+    - name: Vercel Queues
+      used_by: [secure-uploads, home-model, visual-concepts]
+      note: async extraction and image generation with progress states.
+
+data_model:
+  # Entity chains from PRD section "The product's core data model".
+  household: Household -> People -> Needs -> Routines -> Constraints
+  home: Home -> Floors -> Rooms -> Dimensions -> ArchitecturalFeatures
+  possessions: Possessions -> ExistingFurniture -> Dimensions -> KeepOrReplace
+  taste: Taste -> Inspiration -> Colours -> Materials -> Forms -> Styles
+  plan: Plan -> RoomPurpose -> Layout -> FurnishingRequirements
+  concept: Concept -> GeneratedVisual -> SelectedVibe -> Iterations
+  product: Product -> Dimensions -> Price -> Colour -> Material ->
+    Availability -> Retailer
+  ledger: CharitableLedger -> Allocation -> Charity -> PayoutStatus
+
+capabilities:
+  household-profile:
+    description: Household, lifestyle, practical needs, budget, accessibility profile.
+    requirements: [FR-01, FR-02, FR-11, FR-49, FR-50, FR-51, FR-57]
+  secure-uploads:
+    description: >
+      Defence-in-depth file upload pipeline (floor plans, photos, inspiration)
+      shared by every feature that accepts a file.
+    requirements: [FR-59, FR-67, FR-69, FR-70, FR-71, FR-72, FR-73, FR-74,
+      FR-75, FR-76, FR-77, FR-78, FR-79]
+  home-model:
+    description: Property creation, floor-plan upload and spatial extraction, editable home model.
+    requirements: [FR-03, FR-04, FR-05, FR-06, FR-58, FR-60, FR-61, FR-62,
+      FR-63, FR-64, FR-65, FR-66, FR-68]
+  taste-profile:
+    description: Inspiration ingestion and editable interpreted taste profile.
+    requirements: [FR-07, FR-08]
+  room-planning:
+    description: Functional room brief and furniture requirements, with accessibility as hard constraints.
+    requirements: [FR-09, FR-10, FR-52, FR-54, FR-55, FR-56]
+  visual-concepts:
+    description: Grounded visual generation from the actual room, vibe comparison, versioning.
+    requirements: [FR-12, FR-16, FR-17]
+  product-catalogue:
+    description: Shopify UCP/MCP and Meta catalogue connectors, normalized product model, accessibility-aware ranking.
+    requirements: [FR-13, FR-14, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23,
+      FR-24, FR-25, FR-26, FR-27, FR-28, FR-53]
+  budget:
+    description: Running room and whole-home estimated cost.
+    requirements: [FR-15]
+  charity-ledger:
+    description: Affiliate-fee charitable pot and optional Marketplace savings contribution.
+    requirements: [FR-29, FR-30, FR-31, FR-32, FR-33, FR-34, FR-35, FR-36,
+      FR-37, FR-38, FR-39, FR-40, FR-41, FR-42, FR-43, FR-44, FR-45, FR-46,
+      FR-47, FR-48]
+  mobile-experience:
+    description: >
+      Cross-cutting mobile-first, performance and accessibility acceptance
+      gate applied to every capability above, not a standalone feature.
+    requirements: [FR-80, FR-81, FR-82, FR-83, FR-84, FR-85, FR-86, FR-87,
+      FR-88, FR-89, FR-90, FR-91]
+
+changes:
+  # Ordered; each item becomes an openspec/changes/<id> proposal.
+  - id: bootstrap-platform
+    status: in-progress
+    summary: Monorepo scaffold (app, server, packages/shared) with a typed health check.
+  - id: household-and-budget
+    summary: Household profile, accessibility profile, overall budget. Introduces auth and Postgres.
+    requirements: [household-profile]
+  - id: secure-upload-pipeline
+    summary: Shared upload gateway, quarantine, scanning, sandboxed decoding. Must land before any parsing feature.
+    requirements: [secure-uploads]
+    depends_on: [household-and-budget]
+  - id: home-model-and-floorplan
+    summary: Property/home creation, floor-plan upload and extraction, editable spatial model.
+    requirements: [home-model]
+    depends_on: [secure-upload-pipeline]
+  - id: taste-profile
+    summary: Inspiration ingestion and editable taste interpretation.
+    requirements: [taste-profile]
+    depends_on: [secure-upload-pipeline]
+  - id: room-planning-engine
+    summary: Functional room brief and furnishing requirements engine, accessibility hard constraints.
+    requirements: [room-planning]
+    depends_on: [home-model-and-floorplan]
+  - id: visual-concepts
+    summary: Grounded visual generation and vibe comparison.
+    requirements: [visual-concepts]
+    depends_on: [room-planning-engine, taste-profile]
+  - id: product-catalogue-shopify
+    summary: Shopify UCP/MCP connector, normalized product model, accessibility-aware ranking.
+    requirements: [product-catalogue]
+    depends_on: [room-planning-engine]
+  - id: budget-and-home-plan
+    summary: Running room/whole-home budget and the consolidated home plan output.
+    requirements: [budget]
+    depends_on: [product-catalogue-shopify]
+  - id: charity-ledger
+    summary: Affiliate-commission charity pot, ledger, charity selection and payout reconciliation.
+    requirements: [charity-ledger]
+    depends_on: [product-catalogue-shopify]
+  - id: meta-catalogue-and-marketplace-contribution
+    summary: Meta catalogue connector and optional Marketplace savings contribution (Should/Could scope).
+    requirements: [product-catalogue, charity-ledger]
+    depends_on: [charity-ledger]
+
+out_of_scope:
+  # PRD section 11, "Not MVP".
+  - AR furniture placement
+  - Contractor marketplace
+  - Renovation / building works
+  - Structural modifications
+  - Kitchen / bathroom design
+  - Automatic purchasing
+  - Automated measurements claimed as exact
+  - Full architectural CAD
