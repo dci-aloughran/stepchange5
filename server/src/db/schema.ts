@@ -73,6 +73,7 @@ export const uploadPurpose = pgEnum("upload_purpose", [
   "floor_plan",
   "room_photo",
   "inspiration",
+  "listing",
 ]);
 export const uploadStatus = pgEnum("upload_status", [
   "quarantined",

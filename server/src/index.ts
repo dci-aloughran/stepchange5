@@ -7,6 +7,7 @@ import { audit } from "./lib/audit.js";
 import { isAllowedOrigin } from "./lib/origins.js";
 import { conceptRoutes } from "./routes/concepts.js";
 import { homeRoutes } from "./routes/homes.js";
+import { listingRoutes } from "./routes/listing.js";
 import { planRoutes } from "./routes/plans.js";
 import { productRoutes } from "./routes/products.js";
 import { profileRoutes } from "./routes/profile.js";
@@ -36,6 +37,7 @@ const app = new Hono()
   })
   .route("/profile", profileRoutes)
   .route("/homes", homeRoutes)
+  .route("/listing", listingRoutes)
   .route("/uploads", uploadRoutes)
   .route("/taste", tasteRoutes)
   .route("/plans", planRoutes)
