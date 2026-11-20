@@ -55,6 +55,12 @@ export const STEPS: Step[] = [
     ],
     fields: [
       {
+        key: "listingUrl",
+        label: "Listing URL (Rightmove, Zoopla…)",
+        placeholder: "https://www.rightmove.co.uk/properties/...",
+        wide: true,
+      },
+      {
         key: "address",
         label: "Address or name",
         placeholder: "Flat 2, 18 Rowan Court",
