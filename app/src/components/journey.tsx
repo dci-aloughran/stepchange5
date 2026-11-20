@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { Brand } from "./brand";
 import { RoomsStep } from "./rooms-step";
 import { GROUPS, STEPS, type Step } from "./steps";
 
@@ -28,21 +29,6 @@ export function useJourneyState() {
     });
   };
   return { data, update, loaded };
-}
-
-export function Brand({ trailing }: { trailing?: string }) {
-  return (
-    <div className="flex items-center justify-between">
-      <Link href="/" className="text-2xl font-semibold tracking-tight">
-        Deloitful<span className="text-accent">.</span>Home
-      </Link>
-      {trailing && (
-        <span className="text-xs tracking-[0.2em] text-muted uppercase">
-          {trailing}
-        </span>
-      )}
-    </div>
-  );
 }
 
 function Stepper({ current }: { current: Step["group"] }) {

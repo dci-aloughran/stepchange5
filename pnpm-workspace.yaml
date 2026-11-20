@@ -2,7 +2,9 @@ packages:
   - app
   - server
   - packages/*
+  - e2e
 allowBuilds:
   esbuild: true
+  sharp: false
 minimumReleaseAgeExclude:
   - '@hono/node-server@2.1.11'

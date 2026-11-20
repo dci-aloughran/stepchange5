@@ -1,7 +1,7 @@
 import { HealthResponseSchema } from "@stepchange/shared";
 import Image from "next/image";
 import Link from "next/link";
-import { Brand } from "@/components/journey";
+import { Brand } from "@/components/brand";
 import { api } from "@/lib/api";
 
 async function serverOk(): Promise<boolean> {
