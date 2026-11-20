@@ -21,8 +21,10 @@ export function formatPence(pence: number | null | undefined): string {
   return fmt.format(Math.round(pence) / 100);
 }
 
-// Ranges are always rounded to whole pounds; equal ends collapse.
+// Exact amounts (low === high) keep their pence; real ranges are rounded to
+// whole pounds and collapse if the rounded ends meet.
 export function formatPenceRange(low: number, high: number): string {
+  if (low === high) return formatPence(low);
   const lo = Math.round(low / 100) * 100;
   const hi = Math.round(high / 100) * 100;
   if (lo === hi) return formatPence(lo);

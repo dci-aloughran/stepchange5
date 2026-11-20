@@ -128,7 +128,15 @@ try {
     check(await visible(img, 30000), "concept image shown");
     const loaded = await img
       .first()
-      .evaluate((el) => el.complete && el.naturalWidth > 0)
+      .evaluate(
+        (el) =>
+          new Promise((resolve) => {
+            if (el.complete && el.naturalWidth > 0) return resolve(true);
+            el.addEventListener("load", () => resolve(el.naturalWidth > 0));
+            el.addEventListener("error", () => resolve(false));
+            setTimeout(() => resolve(false), 30000);
+          }),
+      )
       .catch(() => false);
     check(loaded, "concept image loaded from presigned URL");
     const disclosure = await conceptCard

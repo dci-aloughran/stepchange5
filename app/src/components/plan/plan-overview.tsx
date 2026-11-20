@@ -331,8 +331,11 @@ function RoomCard({
 
 function BudgetSummary({ budget }: { budget: HomeBudgetResponse | null }) {
   if (!budget) return null;
-  const s = BUDGET_STATUS_TEXT[budget.status];
   const t = budget.totals;
+  const s =
+    t.totalHighPence === 0 && budget.status !== "no_budget"
+      ? { label: "No costs yet", tone: "none" as const }
+      : BUDGET_STATUS_TEXT[budget.status];
   return (
     <Card aria-labelledby="budget-heading">
       <div className="flex flex-wrap items-center justify-between gap-2">

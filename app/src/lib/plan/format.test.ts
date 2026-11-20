@@ -26,7 +26,8 @@ describe("money", () => {
   });
   it("formats ranges to whole pounds and collapses equal ends", () => {
     expect(formatPenceRange(15000, 30000)).toBe("£150–£300");
-    expect(formatPenceRange(12999, 12999)).toBe("£130");
+    expect(formatPenceRange(12999, 12999)).toBe("£129.99");
+    expect(formatPenceRange(12990, 13010)).toBe("£130");
     expect(formatPenceRange(12940, 13010)).toBe("£129–£130");
   });
 });
