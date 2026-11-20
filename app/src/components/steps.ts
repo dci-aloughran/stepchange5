@@ -19,7 +19,15 @@ export type Step = {
   intro: string;
   fields?: Field[];
   choices?: Choice[];
-  custom?: "rooms";
+  custom?:
+    | "rooms"
+    | "needs"
+    | "access"
+    | "inspiration"
+    | "taste"
+    | "keep"
+    | "budget"
+    | "review";
   cta?: string;
 };
 
@@ -94,57 +102,16 @@ export const STEPS: Step[] = [
     title: "Make room for real life.",
     intro:
       "Who's here now, and who's on the way? Start with how you'll use the space.",
-    fields: [
-      { key: "adults", label: "Adults", placeholder: "2 · you + Dan" },
-      { key: "children", label: "Children", placeholder: "1 baby on the way" },
-      {
-        key: "ages",
-        label: "Age / due date",
-        placeholder: "Due May 2027",
-        wide: true,
-      },
-      { key: "pets", label: "Pets", placeholder: "None", wide: true },
-      {
-        key: "guests",
-        label: "Regular guests",
-        placeholder: "Mum visits weekly",
-        wide: true,
-      },
-      {
-        key: "wfh",
-        label: "Work from home",
-        placeholder: "2 days/week",
-        wide: true,
-      },
-    ],
+    custom: "needs",
   },
   {
     slug: "access",
     group: "Needs",
     eyebrow: "02 / Accessibility needs",
-    title: "Space that works for everyone.",
-    intro: "Confirmed needs become hard layout rules. No diagnosis needed.",
-    choices: [
-      {
-        key: "accessNeeds",
-        label: "Needs to plan for",
-        options: [
-          "Wheelchair turning space",
-          "Step-free routes",
-          "Clear transfer space",
-          "Reach range",
-          "Trip-hazard free",
-        ],
-      },
-    ],
-    fields: [
-      {
-        key: "accessNotes",
-        label: "Who and where",
-        placeholder: "Mum's wheelchair: living room and bathroom",
-        wide: true,
-      },
-    ],
+    title: "Space that includes everyone.",
+    intro:
+      "Optional and private. We ask to plan usable routes and room layouts, not to identify a diagnosis. Confirmed needs become hard layout rules.",
+    custom: "access",
   },
   {
     slug: "style",
@@ -153,110 +120,33 @@ export const STEPS: Step[] = [
     title: "Show us what you love.",
     intro:
       "Add boards, photos or products. We'll interpret your taste — you correct it.",
-    fields: [
-      {
-        key: "pinterest",
-        label: "Pinterest / Instagram link",
-        placeholder: "https://…",
-        wide: true,
-      },
-      {
-        key: "loves",
-        label: "Love",
-        placeholder: "Natural oak, warm neutrals, muted greens",
-        wide: true,
-      },
-      {
-        key: "dislikes",
-        label: "Don't love",
-        placeholder: "High gloss, busy patterns",
-        wide: true,
-      },
-    ],
+    custom: "inspiration",
   },
   {
     slug: "taste",
     group: "Style",
     eyebrow: "03 / Your interpreted taste",
-    title: "Warm contemporary, mostly.",
+    title: "Your taste, interpreted.",
     intro:
       "Here's what we took from your inspiration. Adjust anything that's off.",
-    choices: [
-      {
-        key: "taste",
-        label: "Keep what sounds like you",
-        options: [
-          "Natural oak",
-          "Warm neutrals",
-          "Muted greens",
-          "Textured fabrics",
-          "Rounded forms",
-          "Minimal clutter",
-          "Black accents, sparingly",
-        ],
-      },
-    ],
+    custom: "taste",
   },
   {
     slug: "keep",
     group: "Keep",
     eyebrow: "04 / Keep & find",
-    title: "What's coming with you?",
+    title: "Keep the good stuff.",
     intro:
-      "Furniture you keep is planned around first. We only find what's missing.",
-    fields: [
-      {
-        key: "keep1",
-        label: "Keeping",
-        placeholder: "Grey 3-seat sofa · 210 cm",
-        wide: true,
-      },
-      {
-        key: "keep2",
-        label: "Keeping",
-        placeholder: "Oak dining table · 160 × 90 cm",
-        wide: true,
-      },
-      {
-        key: "find",
-        label: "Need to find",
-        placeholder: "Cot, storage, desk",
-        wide: true,
-      },
-    ],
+      "Furniture you keep is planned around first. We only look for what's missing.",
+    custom: "keep",
   },
   {
     slug: "budget",
     group: "Budget",
     eyebrow: "05 / Budget & constraints",
-    title: "Spend where it counts.",
+    title: "A plan within reach.",
     intro: "A whole-home budget keeps every room honest.",
-    fields: [
-      {
-        key: "budget",
-        label: "Total furnishing budget (£)",
-        placeholder: "6,000",
-        wide: true,
-      },
-      {
-        key: "timing",
-        label: "Timing",
-        placeholder: "Nursery by April",
-        wide: true,
-      },
-    ],
-    choices: [
-      {
-        key: "priorities",
-        label: "Priorities",
-        options: [
-          "Child-friendly",
-          "Durable",
-          "Second-hand welcome",
-          "Delivered quickly",
-        ],
-      },
-    ],
+    custom: "budget",
   },
   {
     slug: "review",
@@ -265,6 +155,7 @@ export const STEPS: Step[] = [
     title: "The whole picture.",
     intro:
       "Check the brief before exploring what a plan could look like. Tap any section to revisit it.",
+    custom: "review",
     cta: "Create my plan",
   },
 ];

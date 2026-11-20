@@ -17,10 +17,10 @@ import {
   STATUS_LABELS,
   templateRooms,
 } from "@/lib/rooms";
+import { patchJourney, readRooms, writeRooms } from "@/lib/journey/store";
+import type { JourneyData } from "@/lib/journey/types";
+import type { UpdateJourney } from "@/lib/journey/use-journey";
 import { FloorPlanUpload } from "./floor-plan-upload";
-import type { JourneyData } from "./journey";
-
-const ROOMS_KEY = "deloitful.rooms";
 
 export function basicsFrom(data: JourneyData): HomeBasics {
   const type = String(data.propertyType ?? "House").toLowerCase();
@@ -40,11 +40,10 @@ function plural(n: number, word: string) {
 
 export function RoomsStep({
   data,
-  update,
   loaded,
 }: {
   data: JourneyData;
-  update: (key: string, value: string | string[]) => void;
+  update?: UpdateJourney;
   loaded: boolean;
 }) {
   const basics = basicsFrom(data);
@@ -57,10 +56,7 @@ export function RoomsStep({
   // biome-ignore lint/correctness/useExhaustiveDependencies: run when answers load or counts change
   useEffect(() => {
     if (!loaded) return;
-    let saved: PlanRoom[] | null = null;
-    try {
-      saved = JSON.parse(localStorage.getItem(ROOMS_KEY) ?? "null");
-    } catch {}
+    const saved = readRooms();
     const result = saved?.length
       ? reconcileRooms(saved, basics)
       : { rooms: templateRooms(basics), warnings: [] };
@@ -70,7 +66,7 @@ export function RoomsStep({
 
   function save(next: PlanRoom[]) {
     setRooms(next);
-    localStorage.setItem(ROOMS_KEY, JSON.stringify(next));
+    writeRooms(next);
   }
 
   function change(id: string, patch: Partial<PlanRoom>) {
@@ -121,11 +117,14 @@ export function RoomsStep({
   return (
     <div className="flex flex-col gap-4">
       <FloorPlanUpload
-        data={data}
-        update={update}
         basics={basics}
-        onRooms={(result, extraNotes) => {
+        onRooms={(result, extraNotes, serverIds) => {
           save(result.rooms);
+          // The plan's rooms replace the old list; the old server copies are
+          // removed by the next sync.
+          patchJourney((cur) => ({
+            serverIds: { ...cur.serverIds, rooms: serverIds },
+          }));
           setWarnings(result.warnings);
           setNotes(extraNotes);
         }}
