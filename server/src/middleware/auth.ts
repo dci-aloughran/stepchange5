@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import { getDb, schema } from "../db/client.js";
-import { allowedOrigins } from "../lib/origins.js";
+import { isAllowedOrigin } from "../lib/origins.js";
 
 export type AuthEnv = {
   Variables: {
@@ -22,8 +22,10 @@ export const requireAuth = createMiddleware<AuthEnv>(async (c, next) => {
   try {
     const claims = await verifyToken(token, {
       secretKey: process.env.CLERK_SECRET_KEY,
-      authorizedParties: allowedOrigins(),
     });
+    // Browser-issued tokens carry the page origin in azp; tokens minted with
+    // the secret key (server-side tooling, tests) carry none.
+    if (claims.azp && !isAllowedOrigin(claims.azp)) throw new Error("azp");
     userId = claims.sub;
   } catch {
     throw new HTTPException(401, { message: "Unauthorized" });

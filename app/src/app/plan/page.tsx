@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Brand } from "@/components/journey";
+import { Brand } from "@/components/brand";
 
 export default function PlanPage() {
   return (
