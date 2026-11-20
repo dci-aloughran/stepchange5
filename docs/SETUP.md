@@ -1,3 +1,8 @@
+---
+title: Setup
+nav_order: 3
+---
+
 # Setup
 
 This is a pnpm + Turborepo monorepo:
@@ -61,8 +66,26 @@ pnpm test
 pnpm build
 ```
 
-## Deploy
+## Deploy (product — Vercel)
 
 ```bash
 vercel deploy
+```
+
+`app/` and `server/` are the product and deploy to Vercel only.
+
+## Docs (this site — GitHub Pages)
+
+This team documentation site is built from `docs/` by
+`.github/workflows/pages.yml` and published to GitHub Pages at
+`https://dci-aloughran.github.io/stepchange5/`. It rebuilds automatically on
+pushes to `main` that touch `docs/**`, `openspec/**` or `openspec.yaml`, or
+can be run manually from the Actions tab.
+
+To preview locally, generate the derived pages and run Jekyll inside the
+`docs/` directory:
+
+```bash
+bash docs/scripts/build-generated.sh
+cd docs && bundle exec jekyll serve
 ```

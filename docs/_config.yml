@@ -1,0 +1,35 @@
+title: Home Furnishing Planner — Team Docs
+description: >-
+  Internal engineering docs for the Home Furnishing Planner monorepo
+  (app, server, packages/shared). The product itself is deployed on Vercel —
+  this site is just-the-docs team documentation.
+baseurl: "/stepchange5"
+url: "https://dci-aloughran.github.io"
+
+remote_theme: just-the-docs/just-the-docs
+plugins:
+  - jekyll-remote-theme
+  - jekyll-seo-tag
+  - jekyll-include-cache
+
+color_scheme: light
+search_enabled: true
+
+heading_anchors: true
+
+nav_sort: case_insensitive
+
+aux_links:
+  "View on GitHub":
+    - "https://github.com/dci-aloughran/stepchange5"
+
+aux_links_new_tab: true
+
+back_to_top: true
+back_to_top_text: "Back to top"
+
+footer_content: "Home Furnishing Planner team docs. Product deployments live on Vercel."
+
+exclude:
+  - "scripts/"
+  - "README.md"
