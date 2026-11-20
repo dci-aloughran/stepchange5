@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "rooms": "node --env-file=../app/.env.local rooms.e2e.mjs"
+    "rooms": "node --env-file=../app/.env.local rooms.e2e.mjs",
+    "demo": "node --env-file=../app/.env.local demo.e2e.mjs",
+    "journey": "node --env-file=../app/.env.local full-journey.e2e.mjs"
   },
   "devDependencies": {
     "@clerk/testing": "^2.1.0",
