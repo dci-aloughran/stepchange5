@@ -3,15 +3,15 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { secureHeaders } from "hono/secure-headers";
-import { audit } from "./lib/audit";
-import { isAllowedOrigin } from "./lib/origins";
-import { conceptRoutes } from "./routes/concepts";
-import { homeRoutes } from "./routes/homes";
-import { planRoutes } from "./routes/plans";
-import { productRoutes } from "./routes/products";
-import { profileRoutes } from "./routes/profile";
-import { tasteRoutes } from "./routes/taste";
-import { uploadRoutes } from "./routes/uploads";
+import { audit } from "./lib/audit.js";
+import { isAllowedOrigin } from "./lib/origins.js";
+import { conceptRoutes } from "./routes/concepts.js";
+import { homeRoutes } from "./routes/homes.js";
+import { planRoutes } from "./routes/plans.js";
+import { productRoutes } from "./routes/products.js";
+import { profileRoutes } from "./routes/profile.js";
+import { tasteRoutes } from "./routes/taste.js";
+import { uploadRoutes } from "./routes/uploads.js";
 
 const app = new Hono()
   .use("*", secureHeaders())

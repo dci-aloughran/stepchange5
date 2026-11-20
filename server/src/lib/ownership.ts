@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
-import { getDb, schema } from "../db/client";
+import { getDb, schema } from "../db/client.js";
 
 // SE-009: every home-scoped read/write must go through these checks.
 export async function getOwnedHome(userId: string, homeId: string) {

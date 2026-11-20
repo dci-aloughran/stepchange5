@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
-import { getDb, schema } from "../db/client";
+import { getDb, schema } from "../db/client.js";
 
 export const KILL_SWITCHES = {
   uploads: "uploads",

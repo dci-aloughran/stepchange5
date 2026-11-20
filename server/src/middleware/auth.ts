@@ -2,8 +2,8 @@ import { verifyToken } from "@clerk/backend";
 import { eq } from "drizzle-orm";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
-import { getDb, schema } from "../db/client";
-import { allowedOrigins } from "../lib/origins";
+import { getDb, schema } from "../db/client.js";
+import { allowedOrigins } from "../lib/origins.js";
 
 export type AuthEnv = {
   Variables: {

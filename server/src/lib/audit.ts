@@ -1,4 +1,4 @@
-import { getDb, schema } from "../db/client";
+import { getDb, schema } from "../db/client.js";
 
 export async function audit(
   type: string,
