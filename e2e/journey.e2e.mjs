@@ -160,6 +160,26 @@ try {
   await create.click();
   await page.waitForURL("**/plan", { timeout: 90000 });
   check(true, "Create my plan → /plan");
+  const planRooms = page.locator("section", {
+    has: page.getByRole("heading", { name: "Rooms in this plan" }),
+  });
+  const planShown = await planRooms
+    .getByText("Main bedroom")
+    .first()
+    .waitFor({ timeout: 45000 })
+    .then(
+      () => true,
+      () => false,
+    );
+  const planText = planShown ? await planRooms.innerText() : "";
+  check(
+    planShown &&
+      ["Living room", "Main bedroom", "Bedroom 2", "Bedroom 3"].every((n) =>
+        planText.includes(n),
+      ),
+    "/plan lists the synced rooms",
+  );
+  await shot("08-plan");
 
   // Server state: everything exactly once.
   const verify = async (label, p) => {
