@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "biome check .",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.10.4",
@@ -24,6 +25,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^5.1.1",
     "tailwindcss": "4.3.3",
     "typescript": "^5.9.3",
     "vitest": "^5.1.1"

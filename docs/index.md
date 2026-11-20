@@ -29,3 +29,4 @@ see Vercel below — nothing here is part of the deployed app.
 - [Architecture](architecture.md) — monorepo layout, the app/server contract, local dev.
 - [Roadmap & changes](openspec/) — the product roadmap and OpenSpec change proposals.
 - [PRD](prd.md) — the original product requirements document.
+- [Quality reports](quality.md) — test coverage and code-structure reports, generated from the latest `main`.

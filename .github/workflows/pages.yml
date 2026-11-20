@@ -26,11 +26,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install pandoc
-        run: sudo apt-get update && sudo apt-get install -y pandoc
+      - name: Install pandoc and graphviz
+        run: sudo apt-get update && sudo apt-get install -y pandoc graphviz
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Generate pages from openspec.yaml, openspec/changes/** and the PRD
         run: bash docs/scripts/build-generated.sh
+
+      - name: Generate test coverage and code-structure reports
+        run: bash docs/scripts/build-reports.sh
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

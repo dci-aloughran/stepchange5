@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "dotenv -e .env -- drizzle-kit migrate"
   },
@@ -29,6 +30,7 @@
   "devDependencies": {
     "@hono/node-server": "^2.1.11",
     "@types/node": "^24.19.2",
+    "@vitest/coverage-v8": "^5.1.1",
     "dotenv": "^18.0.10",
     "dotenv-cli": "^11.1.0",
     "drizzle-kit": "^0.31.11",
