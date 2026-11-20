@@ -31,3 +31,4 @@ see Vercel below — nothing here is part of the deployed app.
 - [PRD](prd.md) — the original product requirements document.
 - [Quality reports](quality.md) — test coverage and code-structure reports, generated from the latest `main`.
 - [Pitch deck](pitch/) — the under-6-minute pitch: problem, demo video, and how we built it.
+- [Live demo](live-demo.md) — the scripted e2e walkthrough of the real app, the source of the pitch deck's demo video.
